@@ -43,15 +43,10 @@ if ((($type == "image/png")
 		$image = $grid->findOne(array("_id" => $storedFile));
 		$image->file['filename'] = $filename;
 		$image->file['owner'] = $user;
-		$grid->save($song->file); 
+		$grid->save($image->file); 
 		
 		$connection->close();
-		
-		if (!mysqli_query($conn, $mysql )) {
-			$connection->close();
-			die("Error description: ".mysqli_error($conn));
-			
-		}
+	
 	}
 }else{
 	$connection->close();

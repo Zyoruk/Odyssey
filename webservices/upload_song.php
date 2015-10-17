@@ -40,8 +40,8 @@ if ((($type == "audio/mp3")
 		$song->file['filename'] = $filename;
 		$grid->save($song->file); 
 		
-		if (!mysqli_query($conn, $mysql )) {
-			die("Error description: ".mysqli_error($conn));
+		if (!mysql_query($conn, $mysql )) {
+			die("Error description: ".mysql_error($conn));
 			
 		}
 	}

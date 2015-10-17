@@ -61,9 +61,9 @@ if (isset ( $_REQUEST ['id'] )
 	
 	$sql = $sql."\n WHERE ID = '$id';";
 	
-	if (! mysqli_query ( $conn, $sql )) {
+	if (! mysql_query ( $conn, $sql )) {
 		$conn->close();
-		die ( 'Error description: ' . mysqli_error ( $conn ) );
+		die ( 'Error description: ' . mysql_error ( $conn ) );
 	}
 	
 	$conn->close();

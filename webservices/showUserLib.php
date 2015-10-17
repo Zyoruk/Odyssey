@@ -6,14 +6,14 @@ require_once 'connect_sql.php';
  	
  	$user = $_REQUEST ["uid"];
  	$sql = "SELECT NAME, ARTIST, ALBUM, YEAR, SIZE FROM songs WHERE OWNER = '$user';";
- 	$result = mysqli_query($conn, $sql);
+ 	$result = mysql_query($conn, $sql);
  	
  	if (!$result){
  		$conn->close();
- 		die ("Error description: ".mysqli_errno($conn));
+ 		die ("Error description: ".mysql_errno($conn));
  	}
  	
- 	while ($row = mysqli_fetch_assoc($result)){
+ 	while ($row = mysql_fetch_assoc($result)){
  		echo "".$row["NAME"].$row["ARTIST"].$row["ALBUM"].$row["YEAR"].$row["SIZE"]."<br>";
  	}
  }
