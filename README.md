@@ -7,6 +7,6 @@
 ## Servicios web escritos en PHP: 
 
   Se conectan a una base de datos NoSQL ([MongoDB](https://www.mongodb.org/)) y otra SQL ([MySQL](https://www.mysql.com/)). 
-  NOTA: Actualmente están para conectarse a bases de datos en localhost.
+  
 ##Licencia:
   Refiérase al archivo [LICENSE](https://github.com/Zyoruk/Odyssey/blob/master/LICENSE)
