@@ -2,12 +2,13 @@
 
 require_once 'connect_mongo.php';
 
-if (isset($_REQUEST['filename']) && isset($_REQUEST["owner"])){
+if (isset($_REQUEST['uid'])){
 	#mongo
-	$song_name  = $_REQUEST['filename'];
-	$owner = $_REQUEST["owner"];
+	$user  = $_REQUEST['uid'];
 	$grid = $db->getGridFS();
-	$song = $grid->findOne(array("filename" => $song_name, "owner" => $owner));	
+	$photo = $grid->findOne(array("owner" => $user
+			
+	));	
 	
 	header('Content-Description: File Transfer');
 	header('Content-Type: application/octet-stream');
@@ -15,9 +16,9 @@ if (isset($_REQUEST['filename']) && isset($_REQUEST["owner"])){
 	header('Expires: 0');
 	header('Cache-Control: must-revalidate');
 	header('Pragma: public');
-	header('Content-Length: ' . $song->file['length']);
+	header('Content-Length: ' . $photo->file['length']);
 
-	echo $song->getBytes();
+	echo $photo->getBytes();
 	
 	$connection->close();
 	exit;
