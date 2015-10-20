@@ -16,6 +16,7 @@ $temp = explode ( '.', $_FILES ['file'] ['name'] );
 $extension = end ( $temp );
 $size = $_FILES ['file'] ['size'];
 $type = $_FILES ["file"] ["type"];
+$user_ID = $_REQUEST["uid"];
 
 if ((($type == "audio/mp3") 
 		|| ($type == "audio/MP3")) 
@@ -38,6 +39,7 @@ if ((($type == "audio/mp3")
 		$storedFile = $grid->storeFile($temp);
 		$song = $grid->findOne(array("_id" => $storedFile));
 		$song->file['filename'] = $filename;
+		$song->file['owner'] = $user_ID;
 		$grid->save($song->file); 
 		
 		if (!mysql_query($conn, $mysql )) {

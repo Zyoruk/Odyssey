@@ -1,15 +1,17 @@
 <?php
-$servername = "odissey.cltdmejxzxq6.us-west-2.rds.amazonaws.com:3306";
-$username = "jeukel";
-$password = "1q2w3e4r5t";
+
+$servername = "localhost";
+$username = "root";
+$password = "1234";
 $dbname = 'odyssey';
 
 // Create connection
-$conn = mysql_connect ( $servername, $username, $password, TRUE);
-mysql_select_db($conn, $dbname);
+$conn = mysql_connect ( $servername, $username, $password, TRUE );
+mysql_select_db ($dbname, $conn );
 
 // Check connection
 if (! $conn) {
-	die ( "Connection failed: " . mysqli_connect_error () . "<br>" );
+	die ( "Connection failed: " . mysql_connect_error () . "<br>" );
 }
+
 ?>
