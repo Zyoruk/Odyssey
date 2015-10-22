@@ -12,6 +12,7 @@ $allowed_ext = array (
 		'MP3' 
 );
 
+$filename = $_FILES ['file'] ['name'];
 $temp = explode ( '.', $_FILES ['file'] ['name'] );
 $extension = end ( $temp );
 $size = $_FILES ['file'] ['size'];
@@ -25,27 +26,29 @@ if ((($type == "audio/mp3")
 			
 	if ($_FILES ["file"] ["error"] > 0) {
 		
-		echo 'Error<br>';
+		die ("Error: File error.");
 		
 	} else {
-		#for sql (store song metadata)
-		$filename = $_FILES ['file'] ['name'];
-		$temp = $_FILES ['file'] ['tmp_name'];
 		
-		$mysql = "INSERT INTO songs (NAME, SIZE, OWNER) VALUES ('$filename', '$size', '$user_ID');";
+		#for sql (store song metadata)		
+		$mysql = "INSERT INTO songs (NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$filename', '$size', '$user_ID',NOW());";
 		
-		#for mongo (store the song)
-		$grid  = $db->getGridFS();
-		$storedFile = $grid->storeFile($temp);
-		$song = $grid->findOne(array("_id" => $storedFile));
-		$song->file['filename'] = $filename;
-		$song->file['owner'] = $user_ID;
-		$grid->save($song->file); 
-		
-		if (!mysql_query($conn, $mysql )) {
+		if (!mysql_query($mysql, $conn )) {
 			die("Error description: ".mysql_error($conn));
+				
+		}else{
+			#for mongo (store the song)
+			$temp = $_FILES ['file'] ['tmp_name'];
+			$grid  = $db->getGridFS();
+			$storedFile = $grid->storeFile($temp);
+			$song = $grid->findOne(array("_id" => $storedFile));
+			$song->file['filename'] = $filename;
+			$song->file['owner'] = $user_ID;
+			$song->file['type'] = "song";
+			$grid->save($song->file);
 			
 		}
+		
 	}
 }else{
 	echo "Error";

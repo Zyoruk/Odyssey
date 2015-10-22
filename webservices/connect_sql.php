@@ -11,7 +11,7 @@ mysql_select_db ($dbname, $conn );
 
 // Check connection
 if (! $conn) {
-	die ( "Connection failed: " . mysql_connect_error () . "<br>" );
+	die ( "Connection failed: " . mysql_connect_error ());
 }
 
 ?>

@@ -3,14 +3,14 @@
 require_once 'connect_sql.php'; // connect to mysql
 
 //Check for possible requests. ID must be specified.
-if (isset ( $_REQUEST ['uid'] ) 
+if (isset ( $_REQUEST ['sid'] )
 		&& (isset ( $_REQUEST ['name'] ) 
 				|| isset ( $_REQUEST ['artist'] ) 
 				|| isset ( $_REQUEST ['year'] ) 
 				|| isset ( $_REQUEST ['album'] ) 
 				|| isset ( $_REQUEST ['lyrics'] ))) {
 					 				
-	$id = $_REQUEST ['uid'];
+	$id = $_REQUEST ['sid'];
 	$name = $_REQUEST ['name'] or 'NULL';
 	$year = $_REQUEST ['year'] or 'NULL';
 	$artist = $_REQUEST ['artist'] or 'NULL';
@@ -59,9 +59,10 @@ if (isset ( $_REQUEST ['uid'] )
 		
 	}
 	
+	$sql = $sql.", TIMESTAMP = NOW()";
 	$sql = $sql."\n WHERE ID = '$id';";
 	
-	if (! mysql_query ( $conn, $sql )) {
+	if (! mysql_query ( $sql , $conn )) {
 		$conn->close();
 		die ( 'Error description: ' . mysql_error ( $conn ) );
 	}
