@@ -1,0 +1,14 @@
+<?php
+
+require_once 'connect_sql.php';
+
+if (isset ( $_POST['Like']) && isset($_POST['songid']) && isset ($_POST['uid']))
+{
+	$songID = $_POST['songid'];
+	$userID = $_POST['uid'];
+
+	$sql = "INSERT Likes (song_id, user_id) VALUES('$songID' , '$userID' )";
+	if (!mysql_query($sql , $connection)){
+		die("Error description: ", mysql_error($connection);
+	}
+?>
