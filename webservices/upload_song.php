@@ -29,29 +29,27 @@ if ((($type == "audio/mp3")
 		die ("Error: File error.");
 		
 	} else {
+				
+		#for mongo (store the song)
+		$temp = $_FILES ['file'] ['tmp_name'];
+		$grid  = $db->getGridFS();
+		$storedFile = $grid->storeFile($temp);
+		$song = $grid->findOne(array("_id" => $storedFile));
+		$song->file['filename'] = $filename;
+		$song->file['owner'] = $user_ID;
+		$song->file['type'] = "song";
+		$grid->save($song->file);
 		
-		#for sql (store song metadata)		
-		$mysql = "INSERT INTO songs (NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$filename', '$size', '$user_ID',NOW());";
-		
+		#for sql (store song metadata)
+		#Save the song in SQL with the same ID assigned to mongo.
+		$mysql = "INSERT INTO songs (ID, NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$storedFile','$filename', '$size', '$user_ID',NOW());";
 		if (!mysql_query($mysql, $conn )) {
 			die("Error description: ".mysql_error($conn));
 				
-		}else{
-			#for mongo (store the song)
-			$temp = $_FILES ['file'] ['tmp_name'];
-			$grid  = $db->getGridFS();
-			$storedFile = $grid->storeFile($temp);
-			$song = $grid->findOne(array("_id" => $storedFile));
-			$song->file['filename'] = $filename;
-			$song->file['owner'] = $user_ID;
-			$song->file['type'] = "song";
-			$grid->save($song->file);
-			
-		}
-		
+		}		
 	}
 }else{
-	echo "Error";
+	die ('Woops');
 }
 $connection->close();
 $conn->close();
