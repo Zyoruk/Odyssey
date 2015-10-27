@@ -3,14 +3,14 @@
 -- http://www.phpmyadmin.net
 --
 -- Servidor: localhost
--- Tiempo de generación: 18-10-2015 a las 13:44:46
+-- Tiempo de generación: 27-10-2015 a las 14:04:59
 -- Versión del servidor: 5.5.44-0+deb8u1
 -- Versión de PHP: 5.6.13-0+deb8u1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
-USE odyssey;
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -19,7 +19,8 @@ USE odyssey;
 --
 -- Base de datos: `odyssey`
 --
-
+CREATE DATABASE odyssey
+USE odyssey
 -- --------------------------------------------------------
 
 --
@@ -66,6 +67,31 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `comments`
+--
+
+CREATE TABLE IF NOT EXISTS `comments` (
+`ID` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `song_id` int(11) NOT NULL,
+  `comment_id` varchar(15) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `Dislikes`
+--
+
+CREATE TABLE IF NOT EXISTS `Dislikes` (
+`ID` int(11) NOT NULL,
+  `song_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `friends_relation`
 --
 
@@ -91,6 +117,18 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `Likes`
+--
+
+CREATE TABLE IF NOT EXISTS `Likes` (
+`ID` int(11) NOT NULL,
+  `song_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `songs`
 --
 
@@ -101,9 +139,9 @@ CREATE TABLE IF NOT EXISTS `songs` (
   `YEAR` int(4) DEFAULT NULL,
   `ARTIST` varchar(20) DEFAULT NULL,
   `LYRICS` text,
-  `VERSION` int(11) NOT NULL DEFAULT '0',
   `SIZE` int(11) NOT NULL,
-  `OWNER` int(11) NOT NULL
+  `OWNER` int(11) NOT NULL,
+  `TIMESTAMP` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
 --
@@ -113,7 +151,7 @@ DELIMITER //
 CREATE TRIGGER `insert_versions` BEFORE UPDATE ON `songs`
  FOR EACH ROW BEGIN
 	INSERT INTO songs_versions 
-    (ID_SONGS, NAME, ALBUM, YEAR, ARTIST, LYRICS, VERSION, SIZE, OWNER)
+    (ID_SONGS, NAME, ALBUM, YEAR, ARTIST, LYRICS, SIZE, OWNER, TIMESTAMP)
     SELECT * 
     FROM songs 
     WHERE OLD.ID = NEW.ID;
@@ -145,25 +183,10 @@ CREATE TABLE IF NOT EXISTS `songs_versions` (
   `YEAR` int(4) DEFAULT NULL,
   `ARTIST` varchar(20) DEFAULT NULL,
   `LYRICS` text,
-  `VERSION` int(11) DEFAULT NULL,
   `SIZE` int(11) NOT NULL,
-  `OWNER` int(11) NOT NULL
+  `OWNER` int(11) NOT NULL,
+  `TIMESTAMP` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
-
---
--- Disparadores `songs_versions`
---
-DELIMITER //
-CREATE TRIGGER `increment_songs_version` AFTER INSERT ON `songs_versions`
- FOR EACH ROW BEGIN 
-	SET @x = (SELECT MAX(VERSION) FROM songs_versions WHERE NEW.OWNER = OWNER AND NEW.ID_SONGS = ID_SONGS);
-    
-    UPDATE songs
-    SET songs.VERSION = @x + 1 
-    WHERE NEW.ID_SONGS = songs.ID;    
-END
-//
-DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -219,22 +242,40 @@ ALTER TABLE `authentication`
  ADD PRIMARY KEY (`ID`), ADD UNIQUE KEY `USERNAME_2` (`USERNAME`), ADD KEY `USERNAME` (`USERNAME`);
 
 --
+-- Indices de la tabla `comments`
+--
+ALTER TABLE `comments`
+ ADD PRIMARY KEY (`ID`,`user_id`,`song_id`), ADD UNIQUE KEY `comment_id` (`comment_id`);
+
+--
+-- Indices de la tabla `Dislikes`
+--
+ALTER TABLE `Dislikes`
+ ADD PRIMARY KEY (`ID`,`song_id`,`user_id`), ADD KEY `dislikes_userid_fk` (`user_id`), ADD KEY `dislikes_songid_fk` (`song_id`);
+
+--
 -- Indices de la tabla `friends_relation`
 --
 ALTER TABLE `friends_relation`
  ADD PRIMARY KEY (`friends_id`,`user_id`), ADD KEY `friends_relation_ibfk_2` (`user_id`);
 
 --
+-- Indices de la tabla `Likes`
+--
+ALTER TABLE `Likes`
+ ADD PRIMARY KEY (`ID`,`song_id`,`user_id`), ADD KEY `likes_userid_fk` (`user_id`), ADD KEY `likes_songid_fk` (`song_id`);
+
+--
 -- Indices de la tabla `songs`
 --
 ALTER TABLE `songs`
- ADD PRIMARY KEY (`ID`), ADD UNIQUE KEY `artist_index` (`ARTIST`), ADD KEY `name_index` (`NAME`), ADD KEY `lyrics_index` (`LYRICS`(255)), ADD KEY `album_index` (`ALBUM`), ADD KEY `year_index` (`YEAR`), ADD KEY `size` (`SIZE`), ADD KEY `ownerIndex` (`OWNER`);
+ ADD PRIMARY KEY (`ID`), ADD UNIQUE KEY `artist_index` (`ARTIST`), ADD UNIQUE KEY `NAME_2` (`NAME`), ADD KEY `name_index` (`NAME`), ADD KEY `lyrics_index` (`LYRICS`(255)), ADD KEY `album_index` (`ALBUM`), ADD KEY `year_index` (`YEAR`), ADD KEY `size` (`SIZE`), ADD KEY `ownerIndex` (`OWNER`), ADD KEY `TIMESTAMP` (`TIMESTAMP`), ADD KEY `NAME` (`NAME`);
 
 --
 -- Indices de la tabla `songs_versions`
 --
 ALTER TABLE `songs_versions`
- ADD PRIMARY KEY (`ID_SONGS_VERSIONS`,`ID_SONGS`), ADD KEY `ID_SONGS` (`ID_SONGS`), ADD KEY `size` (`SIZE`);
+ ADD PRIMARY KEY (`ID_SONGS_VERSIONS`,`ID_SONGS`), ADD KEY `size` (`SIZE`), ADD KEY `songs_versions_songid_fk` (`ID_SONGS`);
 
 --
 -- Indices de la tabla `users`
@@ -246,7 +287,7 @@ ALTER TABLE `users`
 -- Indices de la tabla `users_songs`
 --
 ALTER TABLE `users_songs`
- ADD PRIMARY KEY (`id_user`,`id_song`), ADD KEY `id_song` (`id_song`);
+ ADD PRIMARY KEY (`id_user`,`id_song`), ADD KEY `users_songs_songid_fk` (`id_song`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -257,6 +298,21 @@ ALTER TABLE `users_songs`
 --
 ALTER TABLE `authentication`
 MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
+--
+-- AUTO_INCREMENT de la tabla `comments`
+--
+ALTER TABLE `comments`
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT de la tabla `Dislikes`
+--
+ALTER TABLE `Dislikes`
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT de la tabla `Likes`
+--
+ALTER TABLE `Likes`
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT de la tabla `songs`
 --
@@ -277,6 +333,12 @@ MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
 --
 
 --
+-- Filtros para la tabla `Dislikes`
+--
+ALTER TABLE `Dislikes`
+ADD CONSTRAINT `dislikes_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `friends_relation`
 --
 ALTER TABLE `friends_relation`
@@ -284,16 +346,16 @@ ADD CONSTRAINT `friends_relation_ibfk_1` FOREIGN KEY (`friends_id`) REFERENCES `
 ADD CONSTRAINT `friends_relation_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Filtros para la tabla `Likes`
+--
+ALTER TABLE `Likes`
+ADD CONSTRAINT `likes_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `songs`
 --
 ALTER TABLE `songs`
 ADD CONSTRAINT `songs_ibfk_1` FOREIGN KEY (`OWNER`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Filtros para la tabla `songs_versions`
---
-ALTER TABLE `songs_versions`
-ADD CONSTRAINT `songs_versions_ibfk_1` FOREIGN KEY (`ID_SONGS`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `users`
@@ -305,8 +367,7 @@ ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`ID`) REFERENCES `authentication` (`I
 -- Filtros para la tabla `users_songs`
 --
 ALTER TABLE `users_songs`
-ADD CONSTRAINT `users_songs_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
-ADD CONSTRAINT `users_songs_ibfk_2` FOREIGN KEY (`id_song`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+ADD CONSTRAINT `users_songs_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
