@@ -1,9 +1,0 @@
-<?php
-
-require_once 'connect_sql.php';
-
-if (isset ( $_POST['Dislike']) && isset($_POST['songid']) && isset ($_POST['uid']))
-{
-
-
-}

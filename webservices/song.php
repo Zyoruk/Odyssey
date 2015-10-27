@@ -2,7 +2,6 @@
 // Song class
 // Connects to mongo and mysql.
 class Song {
-	
 	function upload() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
