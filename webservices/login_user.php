@@ -9,7 +9,7 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 	$sql = "SELECT ID, PASSWORD FROM authentication WHERE USERNAME = '$username'";
 	$result = mysql_query($sql, $conn);
 	
-	if ( $password != mysql_fetch_assoc($result)['PASSWORD']){
+	if ( mysql_num_rows($result) != 0 && $password != mysql_fetch_assoc($result)['PASSWORD']){
 		die ("Wrong password"); 
 	}
 	
@@ -17,7 +17,7 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 	
 	if (mysql_num_rows($result) == 0){
 		
-		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES ('" . $username ."','".$password."');";
+		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES (' $username ','$password');";
 		
 		if (!mysql_query($sql, $conn)){
 			die("Error description: " . mysql_error($conn));
