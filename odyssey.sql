@@ -19,8 +19,8 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `odyssey`
 --
-CREATE DATABASE odyssey
-USE odyssey
+CREATE DATABASE odyssey;
+USE odyssey;
 -- --------------------------------------------------------
 
 --
