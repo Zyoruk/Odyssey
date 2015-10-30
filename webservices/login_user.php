@@ -17,7 +17,7 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 	
 	if (mysql_num_rows($result) == 0){
 		
-		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES (' $username ','$password');";
+		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES (' $username ',$password');";
 		
 		if (!mysql_query($sql, $conn)){
 			die("Error description: " . mysql_error($conn));
