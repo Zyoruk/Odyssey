@@ -2,6 +2,35 @@
 
 class Social {
 	
+	function befriend(){
+		require_once 'connect_sql.php';
+		
+		$userID = $_REQUEST['uid'];
+		$otherID = $_REQUEST['oid'];
+		
+		$sql = "INSERT INTO friend_relation (user_id, friends_id) VALUES ('$userID', '$otherID')";
+		
+		if (!mysql_query($sql , $conn)){
+			die ("Error description: ". mysql_errno($conn));
+		}
+		
+		$conn->close();
+	}
+	
+	function unfriend(){
+		require_once 'connect_sql.php';
+		$userID = $_REQUEST['uid'];
+		$otherID = $_REQUEST['oid'];
+		
+		$sql = "DELETE FROM friend_relation WHERE user_id = '$userID' AND song_id = '$otherID'";
+		
+		if (!mysql_query($sql , $conn)){
+			die ("Error description: ". mysql_errno($conn));
+		}
+		
+		$conn->close();
+	}
+	
 	function like() {
 		require_once 'connect_sql.php';
 		
@@ -127,7 +156,6 @@ class Social {
 	}
 	
 	function getLikes(){
-		require_once 'connect_sql.php';
 		$songID = $_REQUEST['sid'];
 		
 		$sql = "SELECT COUNT(user_id) AS c FROM Likes WHERE song_id = '$songID'";
@@ -143,9 +171,7 @@ class Social {
 		echo $count;
 		exit();
 	}
-	
 	function getDislikes(){
-		require_once 'connect_sql.php';
 		$songID = $_REQUEST['sid'];
 	
 		$sql = "SELECT COUNT(user_id) AS c FROM Dislikes WHERE song_id = '$songID'";
@@ -193,6 +219,16 @@ else if (isset ($_REQUEST['AddC']) && isset ( $_POST ['comm'] ) && isset ( $_REQ
 	
 	$social = new Social ();
 	$social -> removeComment();
+		
+}else if (isset ($_REQUEST['bf']) && isset ( $_REQUEST ['uid'] ) && isset ( $_REQUEST ['oid'] )) {
+
+	$social = new Social ();
+	$social -> befriend();
+	
+}else if (isset ($_REQUEST['uf']) && isset ( $_REQUEST ['uid'] ) && isset ( $_REQUEST ['oid'] )) {
+
+	$social = new Social ();
+	$social -> unfriend();
 	
 }else {
 	die ( "Woops" );
