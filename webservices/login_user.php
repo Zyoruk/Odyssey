@@ -11,7 +11,6 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 	$result = mysql_query($sql, $conn);
 	
 	if (!result){
-		$conn->close();
 		die ("Error description" . mysql_error ($conn));
 	}
 
@@ -19,7 +18,6 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 		
 		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES ('$username ','$password');";
 		if (!mysql_query($sql, $conn)){
-			$conn->close();
 			die("Error description: " . mysql_error($conn));
 		}
 
@@ -27,7 +25,6 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 		$result = mysql_query($sql, $conn);
 
 		if (!$result){
-			$conn->close();
 			die("Error description: " . mysql_error($conn));
 		}
 
@@ -45,7 +42,6 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 		$pwd = $result["PASSWORD"];
 
 		if ($password != $pwd){
-			$conn->close();
 			die ("Wrong password");
 		}
 		
