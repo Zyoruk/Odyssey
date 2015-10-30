@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Servidor: localhost
--- Tiempo de generación: 27-10-2015 a las 14:04:59
+-- Tiempo de generación: 29-10-2015 a las 23:51:21
 -- Versión del servidor: 5.5.44-0+deb8u1
 -- Versión de PHP: 5.6.13-0+deb8u1
 
@@ -19,21 +19,9 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `odyssey`
 --
-CREATE DATABASE odyssey;
-USE odyssey;
--- --------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `odyssey` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
+USE `odyssey`;
 
---
--- Estructura Stand-in para la vista `7_view`
---
-CREATE TABLE IF NOT EXISTS `7_view` (
-`NAME` varchar(25)
-,`ARTIST` varchar(20)
-,`ALBUM` varchar(25)
-,`YEAR` int(4)
-,`SIZE` int(11)
-,`LYRICS` text
-);
 -- --------------------------------------------------------
 
 --
@@ -44,14 +32,7 @@ CREATE TABLE IF NOT EXISTS `authentication` (
 `ID` int(11) NOT NULL,
   `USERNAME` varchar(20) NOT NULL,
   `PASSWORD` varchar(32) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=ascii;
-
---
--- Volcado de datos para la tabla `authentication`
---
-
-INSERT INTO `authentication` (`ID`, `USERNAME`, `PASSWORD`) VALUES
-(7, 'siul34', 'd6a5f78ca3706d6245262454a9a090f2');
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=ascii;
 
 --
 -- Disparadores `authentication`
@@ -74,8 +55,16 @@ CREATE TABLE IF NOT EXISTS `comments` (
 `ID` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `song_id` int(11) NOT NULL,
-  `comment_id` varchar(15) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+  `comment_id` varchar(26) NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=ascii;
+
+--
+-- RELACIONES PARA LA TABLA `comments`:
+--   `song_id`
+--       `songs` -> `ID`
+--   `user_id`
+--       `users` -> `ID`
+--
 
 -- --------------------------------------------------------
 
@@ -87,7 +76,15 @@ CREATE TABLE IF NOT EXISTS `Dislikes` (
 `ID` int(11) NOT NULL,
   `song_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=ascii;
+
+--
+-- RELACIONES PARA LA TABLA `Dislikes`:
+--   `song_id`
+--       `songs` -> `ID`
+--   `user_id`
+--       `users` -> `ID`
+--
 
 -- --------------------------------------------------------
 
@@ -96,9 +93,17 @@ CREATE TABLE IF NOT EXISTS `Dislikes` (
 --
 
 CREATE TABLE IF NOT EXISTS `friends_relation` (
-  `friends_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
+  `user_id` int(11) NOT NULL,
+  `friends_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+
+--
+-- RELACIONES PARA LA TABLA `friends_relation`:
+--   `friends_id`
+--       `users` -> `ID`
+--   `user_id`
+--       `users` -> `ID`
+--
 
 --
 -- Disparadores `friends_relation`
@@ -124,7 +129,15 @@ CREATE TABLE IF NOT EXISTS `Likes` (
 `ID` int(11) NOT NULL,
   `song_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=ascii;
+
+--
+-- RELACIONES PARA LA TABLA `Likes`:
+--   `song_id`
+--       `songs` -> `ID`
+--   `user_id`
+--       `users` -> `ID`
+--
 
 -- --------------------------------------------------------
 
@@ -142,7 +155,13 @@ CREATE TABLE IF NOT EXISTS `songs` (
   `SIZE` int(11) NOT NULL,
   `OWNER` int(11) NOT NULL,
   `TIMESTAMP` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=ascii;
+
+--
+-- RELACIONES PARA LA TABLA `songs`:
+--   `OWNER`
+--       `users` -> `ID`
+--
 
 --
 -- Disparadores `songs`
@@ -186,7 +205,13 @@ CREATE TABLE IF NOT EXISTS `songs_versions` (
   `SIZE` int(11) NOT NULL,
   `OWNER` int(11) NOT NULL,
   `TIMESTAMP` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=ascii;
+
+--
+-- RELACIONES PARA LA TABLA `songs_versions`:
+--   `ID_SONGS`
+--       `songs` -> `ID`
+--
 
 -- --------------------------------------------------------
 
@@ -202,14 +227,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   `POPULARITY` int(11) DEFAULT NULL,
   `STATUS` char(1) DEFAULT NULL,
   `PHOTO` int(11) DEFAULT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=ascii;
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=ascii;
 
 --
--- Volcado de datos para la tabla `users`
+-- RELACIONES PARA LA TABLA `users`:
+--   `ID`
+--       `authentication` -> `ID`
 --
-
-INSERT INTO `users` (`ID`, `NAME`, `LASTNAME`, `GENRE`, `POPULARITY`, `STATUS`, `PHOTO`) VALUES
-(7, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -222,14 +246,13 @@ CREATE TABLE IF NOT EXISTS `users_songs` (
   `id_song` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=ascii;
 
--- --------------------------------------------------------
-
 --
--- Estructura para la vista `7_view`
+-- RELACIONES PARA LA TABLA `users_songs`:
+--   `id_user`
+--       `users` -> `ID`
+--   `id_song`
+--       `songs` -> `ID`
 --
-DROP TABLE IF EXISTS `7_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `7_view` AS select `songs`.`NAME` AS `NAME`,`songs`.`ARTIST` AS `ARTIST`,`songs`.`ALBUM` AS `ALBUM`,`songs`.`YEAR` AS `YEAR`,`songs`.`SIZE` AS `SIZE`,`songs`.`LYRICS` AS `LYRICS` from `songs` where (`songs`.`OWNER` = 7);
 
 --
 -- Índices para tablas volcadas
@@ -245,13 +268,13 @@ ALTER TABLE `authentication`
 -- Indices de la tabla `comments`
 --
 ALTER TABLE `comments`
- ADD PRIMARY KEY (`ID`,`user_id`,`song_id`), ADD UNIQUE KEY `comment_id` (`comment_id`);
+ ADD PRIMARY KEY (`ID`,`user_id`,`song_id`), ADD UNIQUE KEY `comment_id` (`comment_id`), ADD KEY `comments_uid_fk` (`user_id`), ADD KEY `comments_sid_fk` (`song_id`);
 
 --
 -- Indices de la tabla `Dislikes`
 --
 ALTER TABLE `Dislikes`
- ADD PRIMARY KEY (`ID`,`song_id`,`user_id`), ADD KEY `dislikes_userid_fk` (`user_id`), ADD KEY `dislikes_songid_fk` (`song_id`);
+ ADD PRIMARY KEY (`ID`,`song_id`,`user_id`), ADD KEY `dislikes_userid_fk` (`user_id`), ADD KEY `dislikes_sid_fk` (`song_id`);
 
 --
 -- Indices de la tabla `friends_relation`
@@ -263,7 +286,7 @@ ALTER TABLE `friends_relation`
 -- Indices de la tabla `Likes`
 --
 ALTER TABLE `Likes`
- ADD PRIMARY KEY (`ID`,`song_id`,`user_id`), ADD KEY `likes_userid_fk` (`user_id`), ADD KEY `likes_songid_fk` (`song_id`);
+ ADD PRIMARY KEY (`ID`,`song_id`,`user_id`), ADD KEY `likes_userid_fk` (`user_id`), ADD KEY `likes_sid_fk` (`song_id`);
 
 --
 -- Indices de la tabla `songs`
@@ -275,7 +298,7 @@ ALTER TABLE `songs`
 -- Indices de la tabla `songs_versions`
 --
 ALTER TABLE `songs_versions`
- ADD PRIMARY KEY (`ID_SONGS_VERSIONS`,`ID_SONGS`), ADD KEY `size` (`SIZE`), ADD KEY `songs_versions_songid_fk` (`ID_SONGS`);
+ ADD PRIMARY KEY (`ID_SONGS_VERSIONS`,`ID_SONGS`), ADD KEY `size` (`SIZE`), ADD KEY `songversions_idsongs_fk` (`ID_SONGS`);
 
 --
 -- Indices de la tabla `users`
@@ -287,7 +310,7 @@ ALTER TABLE `users`
 -- Indices de la tabla `users_songs`
 --
 ALTER TABLE `users_songs`
- ADD PRIMARY KEY (`id_user`,`id_song`), ADD KEY `users_songs_songid_fk` (`id_song`);
+ ADD PRIMARY KEY (`id_user`,`id_song`), ADD KEY `user_songs_sid_fk` (`id_song`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -297,45 +320,53 @@ ALTER TABLE `users_songs`
 -- AUTO_INCREMENT de la tabla `authentication`
 --
 ALTER TABLE `authentication`
-MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=70;
 --
 -- AUTO_INCREMENT de la tabla `comments`
 --
 ALTER TABLE `comments`
-MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=9;
 --
 -- AUTO_INCREMENT de la tabla `Dislikes`
 --
 ALTER TABLE `Dislikes`
-MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT de la tabla `Likes`
 --
 ALTER TABLE `Likes`
-MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT de la tabla `songs`
 --
 ALTER TABLE `songs`
-MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
 --
 -- AUTO_INCREMENT de la tabla `songs_versions`
 --
 ALTER TABLE `songs_versions`
-MODIFY `ID_SONGS_VERSIONS` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `ID_SONGS_VERSIONS` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=4;
 --
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
+MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=70;
 --
 -- Restricciones para tablas volcadas
 --
 
 --
+-- Filtros para la tabla `comments`
+--
+ALTER TABLE `comments`
+ADD CONSTRAINT `comments_sid_fk` FOREIGN KEY (`song_id`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `comments_uid_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Filtros para la tabla `Dislikes`
 --
 ALTER TABLE `Dislikes`
+ADD CONSTRAINT `dislikes_sid_fk` FOREIGN KEY (`song_id`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
 ADD CONSTRAINT `dislikes_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
@@ -349,6 +380,7 @@ ADD CONSTRAINT `friends_relation_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `use
 -- Filtros para la tabla `Likes`
 --
 ALTER TABLE `Likes`
+ADD CONSTRAINT `likes_sid_fk` FOREIGN KEY (`song_id`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
 ADD CONSTRAINT `likes_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
@@ -356,6 +388,12 @@ ADD CONSTRAINT `likes_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`ID
 --
 ALTER TABLE `songs`
 ADD CONSTRAINT `songs_ibfk_1` FOREIGN KEY (`OWNER`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `songs_versions`
+--
+ALTER TABLE `songs_versions`
+ADD CONSTRAINT `songversions_idsongs_fk` FOREIGN KEY (`ID_SONGS`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `users`
@@ -367,7 +405,8 @@ ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`ID`) REFERENCES `authentication` (`I
 -- Filtros para la tabla `users_songs`
 --
 ALTER TABLE `users_songs`
-ADD CONSTRAINT `users_songs_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
+ADD CONSTRAINT `users_songs_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `users` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `user_songs_sid_fk` FOREIGN KEY (`id_song`) REFERENCES `songs` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
