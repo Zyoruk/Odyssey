@@ -1,47 +1,60 @@
 <?php
 require_once 'connect_sql.php';
 
+
 if (isset($_POST['password']) and isset($_POST['username'])){
 	
 	$username = $_POST["username"];
 	$password = md5($_POST["password"]);
-	
+
 	$sql = "SELECT ID, PASSWORD FROM authentication WHERE USERNAME = '$username'";
 	$result = mysql_query($sql, $conn);
 	
-	if ( mysql_num_rows($result) != 0 && $password != mysql_fetch_assoc($result)['PASSWORD']){
-		die ("Wrong password"); 
+	if (!result){
+		$conn->close();
+		die ("Error description" . mysql_error ($conn));
 	}
-	
-	$result = mysql_query($sql, $conn);
-	
+
 	if (mysql_num_rows($result) == 0){
 		
-		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES (' $username ',$password');";
-		
+		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES ('$username ','$password');";
 		if (!mysql_query($sql, $conn)){
+			$conn->close();
 			die("Error description: " . mysql_error($conn));
 		}
-		
-		#Create a view for the user.
-		$sql = "CREATE VIEW ".$user_ID."_view AS SELECT NAME, ARTIST, ALBUM, YEAR, SIZE, LYRICS FROM songs WHERE OWNER =".$user_ID.";";
-		if (!mysql_query($sql, $conn)){
-			die("Error description: " . mysql_error($conn));
-		}
-		
+
 		$sql = "SELECT ID FROM authentication WHERE USERNAME = '$username'";
 		$result = mysql_query($sql, $conn);
-		
+
 		if (!$result){
+			$conn->close();
 			die("Error description: " . mysql_error($conn));
 		}
+
+		$result = mysql_fetch_assoc($result);
+		$user_ID = $result["ID"];
+		echo $user_ID;
+		$conn->close();
+
+	}else {		
+		$sql = "SELECT ID, PASSWORD FROM authentication WHERE USERNAME = '$username'";
+		$result = mysql_query($sql, $conn);
+		
+		$result = mysql_fetch_assoc($result);
+		$user_ID = $result["ID"];
+		$pwd = $result["PASSWORD"];
+
+		if ($password != $pwd){
+			$conn->close();
+			die ("Wrong password");
+		}
+		
+		echo $user_ID;
+		$conn->close();
 	}
 	
-	$user_ID = mysql_fetch_assoc($result)['ID'];
-	echo $user_ID;
-	$conn->close();
-	
 }else{
+	$conn->close();
 	die ("Woops");
 }
 ?>
