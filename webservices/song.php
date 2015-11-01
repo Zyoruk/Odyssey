@@ -157,6 +157,45 @@ class Song {
 		$conn->close ();
 		exit();
 	}
+	
+	function removeSong(){
+		require 'connect_mongo.php';
+		require 'connect_sql.php';
+		
+		$userID = $_REQUEST['uid'];
+		$songID = $_REQUEST['sid'];
+		
+		$query = "SELECT NAME FROM songs WHERE OWNER = '$userID' AND ID = '$songID'";
+		
+		$result = mysql_query($query);
+		
+		if (!$result){
+			die ("Error description: ". mysql_error($conn));
+		}
+		
+		if (mysql_num_rows($result) == 0){
+			
+			die ("Cannot remove song");
+			
+		}else{
+			
+			$result = mysql_fetch_assoc($result);
+			$name = $result["NAME"];
+			$grid = $db->getGridFS();
+			$grid->remove(array ('filename' =>$name , 'owner' => $userID));
+			
+			$query = "DELETE FROM SONGS WHERE ID = '$songID'";
+			
+			if (!mysql_query($query)){
+				die ("Error description: " . mysql_error($conn) );
+			}
+			
+			$conn->close();
+			$connection->close();
+			exit();
+		}
+	
+	}
 }
 
 if (isset ( $_REQUEST ['f'] )) {
@@ -184,6 +223,11 @@ if (isset ( $_REQUEST ['f'] )) {
 		
 		if (isset ( $_REQUEST ['sid'] ) && (isset ( $_REQUEST ['name'] ) || isset ( $_REQUEST ['artist'] ) || isset ( $_REQUEST ['year'] ) || isset ( $_REQUEST ['album'] ) || isset ( $_REQUEST ['lyrics'] ))) {
 			$song->changemetadata ();
+		}
+	} else if ($fun == 'rs') {
+	
+		if (isset ( $_REQUEST ['sid'] ) && (isset ( $_REQUEST ['uid'] ))) {
+			$song->removeSong();
 		}
 	} else {
 		
