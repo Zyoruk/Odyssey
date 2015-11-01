@@ -187,6 +187,20 @@ class Social {
 		require_once 'connect_mongo.php';
 
 		$commentID = $_REQUEST ['cid'];
+		$userID = $_REQUEST['uid'];
+		
+		$mysql = "SELECT user_id FROM comments WHERE comment_id = '$commentID'";
+		$result = mysql_query($mysql);
+		
+		if (!result){
+			die ("Error description: ". mysql_error($conn)); 
+		}
+		
+		$result = mysql_fetch_assoc($result);
+		
+		if (!($result["user_id"] == $userID)){
+			die ("Error: Cannot remove a comment");
+		}
 		// for mongo (remove the commentary)
 		$db->comment->remove( array (
 				'_id' => $commentID
@@ -326,7 +340,7 @@ else if (isset ($_REQUEST['AddC']) && isset ( $_POST ['comm'] ) && isset ( $_REQ
 	$social = new Social ();
 	$social -> getComments();
 
-}else if (isset ($_REQUEST['rc']) && isset ( $_REQUEST ['cid'] )) {
+}else if (isset ($_REQUEST['rc']) && isset ( $_REQUEST ['cid'] ) && isset ( $_REQUEST ['uid'] )) {
 	$social = new Social ();
 	$social -> removeComment();
 	
