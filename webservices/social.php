@@ -130,14 +130,62 @@ class Social {
 		$connection->close ();
 	}
 	
-	function removeComment(){
+	function commentPhoto() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
-		
 		
 		$songID = $_REQUEST ['sid'];
 		$userID = $_REQUEST ['uid'];
 		
+		$allowed_ext = array (
+				'png',
+				'jpg',
+				'bmp' 
+		);
+		
+		$temp = explode ( '.', $_FILES ['file'] ['name'] );
+		$extension = end ( $temp );
+		$size = $_FILES ['file'] ['size'];
+		$type = $_FILES ["file"] ["type"];
+		
+		if ((($type == "image/png") || ($type == "image/jpg") || ($type == "image/bmp")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
+			
+			if ($_FILES ["file"] ["error"] > 0) {
+				die ( 'File error' );
+			} else {
+				
+				// for mongo (store the photo)
+				$filename = $_FILES ['file'] ['name'];
+				$temp = $_FILES ['file'] ['tmp_name'];
+				$grid = $db->getGridFS ();
+				
+				$storedFile = $grid->storeFile ( $temp );
+				$image = $grid->findOne ( array (
+						"_id" => $storedFile 
+				) );
+				$image->file ['filename'] = $filename;
+				$image->file ['owner'] = $user;
+				$image->file ['type'] = "image";
+				$grid->save ( $image->file );
+				
+				$id = ( string ) $storedFile;
+				
+				$mysql = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
+				
+				if (! mysql_query ( $mysql, $conn )) {
+					die ( "Error description: " . mysql_error ( $conn ) );
+				}
+				
+				$conn->close ();
+				$connection->close ();
+			}
+		}
+	}
+	
+	function removeComment(){
+		require_once 'connect_sql.php';
+		require_once 'connect_mongo.php';
+
 		$commentID = $_REQUEST ['cid'];
 		// for mongo (remove the commentary)
 		$db->comment->remove( array (
@@ -150,7 +198,45 @@ class Social {
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
-		echo "LOL3";
+		$conn->close ();
+		$connection->close ();
+	}
+	
+	function getComments(){
+		require_once 'connect_sql.php';
+		require_once 'connect_mongo.php';
+		
+		
+		$songID = $_REQUEST ['sid'];
+		
+		$commentID = $_REQUEST ['cid'];
+		
+		$mysql = "SELECT comment_id FROM comments WHERE song_id = '$songID';";
+		
+		$result = mysql_query($mysql , $conn);
+		
+		if (! $result) {
+			die ( "Error description: " . mysql_error ( $conn ) );
+		}
+		
+		$comments = [ ];
+		
+		while ( $row = mysql_fetch_assoc ( $result ) ) {
+			
+			$comments += $db->comment->find ( array (
+					'_id' => $row ['comment_id'] 
+			) );
+			
+			$grid = $db->getGridFS ();
+			
+			$comments += $grid->find ( array (
+					'_id' => $row ['comment_id'] 
+			) );
+			
+		}
+		
+		echo $comments;
+		
 		$conn->close ();
 		$connection->close ();
 	}
@@ -171,6 +257,7 @@ class Social {
 		echo $count;
 		exit();
 	}
+	
 	function getDislikes(){
 		$songID = $_REQUEST['sid'];
 	
@@ -205,6 +292,11 @@ else if (isset ($_REQUEST['AddC']) && isset ( $_POST ['comm'] ) && isset ( $_REQ
 	$social = new Social ();
 	$social -> comment ();
 	
+}else if (isset ($_REQUEST['AddCP']) && isset ( $_POST ['file'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
+
+	$social = new Social ();
+	$social -> commentPhoto();
+
 }else if (isset ($_REQUEST['gl']) &&  (isset ($_REQUEST['sid']))){
 	
 	$social = new Social ();
@@ -229,6 +321,14 @@ else if (isset ($_REQUEST['AddC']) && isset ( $_POST ['comm'] ) && isset ( $_REQ
 
 	$social = new Social ();
 	$social -> unfriend();
+	
+}else if (isset ($_REQUEST['gc']) && isset ( $_REQUEST ['sid'] )) {
+	$social = new Social ();
+	$social -> getComments();
+
+}else if (isset ($_REQUEST['rc']) && isset ( $_REQUEST ['cid'] )) {
+	$social = new Social ();
+	$social -> removeComment();
 	
 }else {
 	die ( "Woops" );
