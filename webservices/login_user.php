@@ -1,4 +1,16 @@
 <?php
+
+/**
+ * @author Zyoruk
+ * @param username POST
+ * @param password POST
+ *
+ * This will connect to mysql, and perform the following.
+ * 
+ * Check if the username and password are correct.
+ * If the username doesnt exists it will create a new one. 
+ * @return user ID or Error 
+ */
 require_once 'connect_sql.php';
 
 

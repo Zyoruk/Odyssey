@@ -1,9 +1,22 @@
 <?php
+/**
+ * 
+ * @author zyoruk
+ * User class.
+ */
 class User {
+	/**
+	 * @param up GET 
+	 * @param uid which is the user id that was returned when logged in. GET
+	 * @param file which is the photo to be uploaded FILE
+	 * It will connect to mongo and store a photo using GridFS. Extra metadata added.
+	 * type and owner.
+	 * @return Error or nothing.
+	 */
 	function uploadPhoto() {
 		require_once "connect_mongo.php";
 		
-		$user = $_REQUEST ["uid"];
+		$user = $_GET ["uid"];
 		
 		$allowed_ext = array (
 				'png',
@@ -52,11 +65,18 @@ class User {
 			die ( "Error" );
 		}
 	}
+	
+	/**
+	 * @param dp GET
+	 * @param uid  GET 
+	 * It will display a window to download the photo.
+	 * @return image or Error
+	 */
 	function downloadPhoto() {
 		require_once 'connect_mongo.php';
 		
 		// mongo
-		$user = $_REQUEST ['uid'];
+		$user = $_GET ['uid'];
 		$grid = $db->getGridFS ();
 		$photo = $grid->findOne ( array (
 				"owner" => $user,
@@ -76,10 +96,16 @@ class User {
 		$connection->close ();
 		exit ();
 	}
+	
+	/**
+	 * @param gp GET 
+	 * @param uid GET
+	 * @return image or Error
+	 */
 	function getPhoto() {
 		require_once 'connect_mongo.php';
 		
-		$owner = $_REQUEST ['uid'];
+		$owner = $_GET ['uid'];
 		$grid = $db->getGridFS ();
 		$song = $grid->findOne ( array (
 				"owner" => $owner,
@@ -90,10 +116,17 @@ class User {
 		
 		$connection->close ();
 	}
+	
+	/**
+	 * @param rp GET
+	 * @param uid GET
+	 * Removes the photo of the user.
+	 * @return Error or nothing 
+	 */
 	function removePhoto() {
 		require_once 'connect_mongo.php';
 		
-		$owner = $_REQUEST ['uid'];
+		$owner = $_GET ['uid'];
 		$grid = $db->getGridFS ();
 		$song = $grid->remove ( array (
 				"owner" => $owner,
@@ -102,12 +135,22 @@ class User {
 		
 		$connection->close ();
 	}
+	/**
+	 * @param cui GET
+	 * @param uid GET
+	 * @param name POST
+	 * @param lastname POST
+	 * 
+	 * Expected name , lastname or both .
+	 * 
+	 *  @return Error or nothing
+	 */
 	function changeUserInfo() {
 		require_once "connect_sql.php";
 		
-		$userID = $_REQUEST ["uid"];
-		$name = $_REQUEST ["name"];
-		$lastname = $_REQUEST ["lastname"];
+		$userID = $_GET ["uid"];
+		$name = $_POST ["name"];
+		$lastname = $_POST ["lastname"];
 		
 		$query = "UPDATE users SET ";
 		$multiple = False;
@@ -148,7 +191,7 @@ if (isset ( $_REQUEST ['up'] ) && isset ( $_FILES ["file"] ) && isset ( $_REQUES
 	$user->getPhoto ();
 } else if (isset ( $_REQUEST ['rp'] ) && isset ( $_REQUEST ['uid'] )) {
 	$user->removePhoto ();
-} else if (isset ( $_REQUEST ['uid'] ) && (isset ( $_REQUEST ['name'] ) || isset ( $_REQUEST ['lastname'] ))) {
+} else if (isset ( $_REQUEST ['cui'] ) && isset ( $_REQUEST ['uid'] ) && (isset ( $_REQUEST ['name'] ) || isset ( $_REQUEST ['lastname'] ))) {
 	$user->changeUserInfo ();
 } else {
 	die ( "Woops" );
