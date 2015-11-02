@@ -26,7 +26,7 @@ class Song {
 				$connection->close ();
 				die ( "Error: File error." );
 			} else {
-
+				
 				// for sql (store song metadata)
 				
 				$mysql = "INSERT INTO songs ( NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$filename', '$size', '$user_ID',NOW());";
@@ -45,7 +45,6 @@ class Song {
 				$song->file ['owner'] = $user_ID;
 				$song->file ['type'] = "song";
 				$grid->save ( $song->file );
-
 			}
 		} else {
 			$conn->close ();
@@ -55,11 +54,10 @@ class Song {
 		
 		$conn->close ();
 		$connection->close ();
-		exit();
+		exit ();
 	}
-	
 	function download() {
-		require_once  'connect_mongo.php';
+		require_once 'connect_mongo.php';
 		// mongo
 		$song_name = $_REQUEST ['filename'];
 		$owner = $_REQUEST ["owner"];
@@ -80,7 +78,6 @@ class Song {
 		$conn->close ();
 		exit ();
 	}
-	
 	function changemetadata() {
 		require_once 'connect_sql.php';
 		// Check for possible requests. ID must be specified.
@@ -140,9 +137,8 @@ class Song {
 			die ( 'Error description: ' . mysql_error ( $conn ) );
 		}
 		$conn->close ();
-		exit();
+		exit ();
 	}
-	
 	function getsong() {
 		require_once 'connect_mongo.php';
 		// mongo
@@ -155,46 +151,60 @@ class Song {
 		) );
 		echo $song->getBytes ();
 		$conn->close ();
-		exit();
+		exit ();
 	}
-	
-	function removeSong(){
+	function removeSong() {
 		require 'connect_mongo.php';
 		require 'connect_sql.php';
 		
-		$userID = $_REQUEST['uid'];
-		$songID = $_REQUEST['sid'];
+		$userID = $_REQUEST ['uid'];
+		$songID = $_REQUEST ['sid'];
 		
 		$query = "SELECT NAME FROM songs WHERE OWNER = '$userID' AND ID = '$songID'";
 		
-		$result = mysql_query($query);
+		$result = mysql_query ( $query );
 		
-		if (!$result){
-			die ("Error description: ". mysql_error($conn));
+		if (! $result) {
+			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
-		if (mysql_num_rows($result) == 0){
+		if (mysql_num_rows ( $result ) == 0) {
 			
-			die ("Cannot remove song");
+			die ( "Cannot remove song" );
+		} else {
 			
-		}else{
-			
-			$result = mysql_fetch_assoc($result);
-			$name = $result["NAME"];
-			$grid = $db->getGridFS();
-			$grid->remove(array ('filename' =>$name , 'owner' => $userID));
+			$result = mysql_fetch_assoc ( $result );
+			$name = $result ["NAME"];
+			$grid = $db->getGridFS ();
+			$grid->remove ( array (
+					'filename' => $name,
+					'owner' => $userID 
+			) );
 			
 			$query = "DELETE FROM SONGS WHERE ID = '$songID'";
 			
-			if (!mysql_query($query)){
-				die ("Error description: " . mysql_error($conn) );
+			if (! mysql_query ( $query )) {
+				die ( "Error description: " . mysql_error ( $conn ) );
 			}
 			
-			$conn->close();
-			$connection->close();
-			exit();
+			$conn->close ();
+			$connection->close ();
+			exit ();
 		}
-	
+	}
+	function showUserSongs() {
+		$user = $_REQUEST ["uid"];
+		$sql = "SELECT NAME, ARTIST, ALBUM, YEAR, SIZE FROM songs WHERE OWNER = '$user';";
+		$result = mysql_query ( $conn, $sql );
+		
+		if (! $result) {
+			$conn->close ();
+			die ( "Error description: " . mysql_errno ( $conn ) );
+		}
+		
+		while ( $row = mysql_fetch_assoc ( $result ) ) {
+			echo "" . $row ["NAME"] . $row ["ARTIST"] . $row ["ALBUM"] . $row ["YEAR"] . $row ["SIZE"] . "<br>";
+		}
 	}
 }
 
@@ -202,7 +212,7 @@ if (isset ( $_REQUEST ['f'] )) {
 	
 	$fun = $_REQUEST ['f'];
 	$song = new Song ();
-
+	
 	if ($fun == 'ups') {
 		
 		if (isset ( $_REQUEST ['uid'] )) {
@@ -214,7 +224,7 @@ if (isset ( $_REQUEST ['f'] )) {
 			
 			$song->getsong ();
 		}
-	} else if ($fun =='dds') {
+	} else if ($fun == 'dds') {
 		
 		if (isset ( $_REQUEST ['filename'] ) && isset ( $_REQUEST ["owner"] )) {
 			$song->download ();
@@ -225,9 +235,14 @@ if (isset ( $_REQUEST ['f'] )) {
 			$song->changemetadata ();
 		}
 	} else if ($fun == 'rs') {
-	
+		
 		if (isset ( $_REQUEST ['sid'] ) && (isset ( $_REQUEST ['uid'] ))) {
-			$song->removeSong();
+			$song->removeSong ();
+		}
+	} else if ($fun == 'gus') {
+		
+		if (isset ( $_REQUEST ['uid'] )) {
+			$song->showUserSongs ();
 		}
 	} else {
 		

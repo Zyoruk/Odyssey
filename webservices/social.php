@@ -1,36 +1,32 @@
 <?php
-
 class Social {
-	
-	function befriend(){
+	function befriend() {
 		require_once 'connect_sql.php';
 		
-		$userID = $_REQUEST['uid'];
-		$otherID = $_REQUEST['oid'];
+		$userID = $_REQUEST ['uid'];
+		$otherID = $_REQUEST ['oid'];
 		
 		$sql = "INSERT INTO friend_relation (user_id, friends_id) VALUES ('$userID', '$otherID')";
 		
-		if (!mysql_query($sql , $conn)){
-			die ("Error description: ". mysql_errno($conn));
+		if (! mysql_query ( $sql, $conn )) {
+			die ( "Error description: " . mysql_errno ( $conn ) );
 		}
 		
-		$conn->close();
+		$conn->close ();
 	}
-	
-	function unfriend(){
+	function unfriend() {
 		require_once 'connect_sql.php';
-		$userID = $_REQUEST['uid'];
-		$otherID = $_REQUEST['oid'];
+		$userID = $_REQUEST ['uid'];
+		$otherID = $_REQUEST ['oid'];
 		
 		$sql = "DELETE FROM friend_relation WHERE user_id = '$userID' AND song_id = '$otherID'";
 		
-		if (!mysql_query($sql , $conn)){
-			die ("Error description: ". mysql_errno($conn));
+		if (! mysql_query ( $sql, $conn )) {
+			die ( "Error description: " . mysql_errno ( $conn ) );
 		}
 		
-		$conn->close();
+		$conn->close ();
 	}
-	
 	function like() {
 		require_once 'connect_sql.php';
 		
@@ -41,30 +37,29 @@ class Social {
 		$sql = "SELECT 1 FROM Likes WHERE user_id = '$userID'";
 		$result = mysql_query ( $sql, $conn );
 		if (! $result) {
-				
+			
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
-		if (mysql_num_rows($result) == 0){
-		
+		if (mysql_num_rows ( $result ) == 0) {
+			
 			$sql = "INSERT INTO Likes (song_id, user_id) VALUES('$songID' , '$userID' )";
 			
 			if (! mysql_query ( $sql, $conn )) {
 				
 				die ( "Error description: " . mysql_error ( $conn ) );
 			}
-		}else{
+		} else {
 			$sql = "DELETE FROM Likes WHERE user_id = '$userID'";
-				
-			if (! mysql_query ( $sql, $conn )) {
 			
+			if (! mysql_query ( $sql, $conn )) {
+				
 				die ( "Error description: " . mysql_error ( $conn ) );
 			}
 		}
 		
-		$conn->close();
+		$conn->close ();
 	}
-	
 	function dislike() {
 		require_once 'connect_sql.php';
 		
@@ -77,35 +72,32 @@ class Social {
 		$result = mysql_query ( $sql, $conn );
 		
 		if (! $result) {
-							
+			
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
-		if (mysql_num_rows($result) == 0){
-		
+		if (mysql_num_rows ( $result ) == 0) {
+			
 			$sql = "INSERT INTO Dislikes (song_id, user_id) VALUES('$songID' , '$userID' )";
 			
 			if (! mysql_query ( $sql, $conn )) {
 				
 				die ( "Error description: " . mysql_error ( $conn ) );
 			}
-		}else{
+		} else {
 			$sql = "DELETE FROM Dislikes WHERE user_id = '$userID'";
-				
-			if (! mysql_query ( $sql, $conn )) {
 			
+			if (! mysql_query ( $sql, $conn )) {
+				
 				die ( "Error description: " . mysql_error ( $conn ) );
 			}
 		}
 		
-		$conn->close();
+		$conn->close ();
 	}
-	
-	
 	function comment() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
-		
 		
 		$songID = $_REQUEST ['sid'];
 		$userID = $_REQUEST ['uid'];
@@ -118,18 +110,17 @@ class Social {
 		);
 		$comment_collection->insert ( $commentary );
 		
-		$id =  (string) $commentary ["_id"];
+		$id = ( string ) $commentary ["_id"];
 		
-		$mysql = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
+		$query = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
 		
-		if (! mysql_query ( $mysql, $conn )) {
+		if (! mysql_query ( $query, $conn )) {
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
 		$conn->close ();
 		$connection->close ();
 	}
-	
 	function commentPhoto() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
@@ -170,9 +161,9 @@ class Social {
 				
 				$id = ( string ) $storedFile;
 				
-				$mysql = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
+				$query = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
 				
-				if (! mysql_query ( $mysql, $conn )) {
+				if (! mysql_query ( $query, $conn )) {
 					die ( "Error description: " . mysql_error ( $conn ) );
 				}
 				
@@ -181,53 +172,50 @@ class Social {
 			}
 		}
 	}
-	
-	function removeComment(){
+	function removeComment() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
-
+		
 		$commentID = $_REQUEST ['cid'];
-		$userID = $_REQUEST['uid'];
+		$userID = $_REQUEST ['uid'];
 		
-		$mysql = "SELECT user_id FROM comments WHERE comment_id = '$commentID'";
-		$result = mysql_query($mysql);
+		$query = "SELECT user_id FROM comments WHERE comment_id = '$commentID'";
+		$result = mysql_query ( $query );
 		
-		if (!result){
-			die ("Error description: ". mysql_error($conn)); 
+		if (! result) {
+			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
-		$result = mysql_fetch_assoc($result);
+		$result = mysql_fetch_assoc ( $result );
 		
-		if (!($result["user_id"] == $userID)){
-			die ("Error: Cannot remove a comment");
+		if (! ($result ["user_id"] == $userID)) {
+			die ( "Error: Cannot remove a comment" );
 		}
 		// for mongo (remove the commentary)
-		$db->comment->remove( array (
-				'_id' => $commentID
-		));
-
-		$mysql = "DELETE FROM comments WHERE comment_id = '$commentID';";
+		$db->comment->remove ( array (
+				'_id' => $commentID 
+		) );
 		
-		if (! mysql_query ( $mysql, $conn )) {
+		$query = "DELETE FROM comments WHERE comment_id = '$commentID';";
+		
+		if (! mysql_query ( $query, $conn )) {
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
 		$conn->close ();
 		$connection->close ();
 	}
-	
-	function getComments(){
+	function getComments() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
-		
 		
 		$songID = $_REQUEST ['sid'];
 		
 		$commentID = $_REQUEST ['cid'];
 		
-		$mysql = "SELECT comment_id FROM comments WHERE song_id = '$songID';";
+		$query = "SELECT comment_id FROM comments WHERE song_id = '$songID';";
 		
-		$result = mysql_query($mysql , $conn);
+		$result = mysql_query ( $query, $conn );
 		
 		if (! $result) {
 			die ( "Error description: " . mysql_error ( $conn ) );
@@ -246,7 +234,6 @@ class Social {
 			$comments += $grid->find ( array (
 					'_id' => $row ['comment_id'] 
 			) );
-			
 		}
 		
 		echo $comments;
@@ -254,97 +241,133 @@ class Social {
 		$conn->close ();
 		$connection->close ();
 	}
-	
-	function getLikes(){
-		$songID = $_REQUEST['sid'];
+	function getLikes() {
+		require_once 'connect_sql.php';
+		
+		$songID = $_REQUEST ['sid'];
 		
 		$sql = "SELECT COUNT(user_id) AS c FROM Likes WHERE song_id = '$songID'";
 		
 		$result = mysql_query ( $sql, $conn );
 		if (! $result) {
-
+			
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
 		
-		$count = mysql_fetch_assoc($result)['c'];
+		$count = mysql_fetch_assoc ( $result ) ['c'];
 		
 		echo $count;
-		exit();
+		exit ();
 	}
-	
-	function getDislikes(){
-		$songID = $_REQUEST['sid'];
-	
+	function getDislikes() {
+		require_once 'connect_sql.php';
+		
+		$songID = $_REQUEST ['sid'];
+		
 		$sql = "SELECT COUNT(user_id) AS c FROM Dislikes WHERE song_id = '$songID'";
-	
+		
 		$result = mysql_query ( $sql, $conn );
 		if (! $result) {
-
+			
 			die ( "Error description: " . mysql_error ( $conn ) );
 		}
-	
-		$count = mysql_fetch_assoc($result)['c'];
-	
+		
+		$count = mysql_fetch_assoc ( $result ) ['c'];
+		
 		echo $count;
-		exit();
+		exit ();
+	}
+	function getFriends() {
+		require_once "connect_sql.php";
+		
+		$userID = $_REQUEST ['uid'];
+		$query = "SELECT ID, NAME, LASTNAME, GENRE, POPULARITY FROM users LEFT OUTER JOIN friends_relation ON friends_id = ID WHERE user_id = '$userID'";
+		
+		$result = mysql_query ( $query );
+		
+		if (! $result) {
+			die ( "Error description: " . mysql_error ( $query ) );
+		}
+		
+		echo json_encode ( $result );
+		
+		$conn->close ();
+	}
+	function getFriendCount() {
+		require_once "connect_sql.php";
+		
+		$userID = $_REQUEST ["uid"];
+		
+		$query = "SELECT COUNT(friends_id) AS c FROM friends_relation WHERE user_id = '$userID'";
+		
+		$result = mysql_query ( $query, $conn );
+		
+		if (! $result) {
+			
+			die ( "Error description: " . mysql_error ( $conn ) );
+		}
+		
+		$count = mysql_fetch_assoc ( $result ) ['c'];
+		
+		echo $count;
+		
+		$conn->close ();
 	}
 }
 
 if (isset ( $_REQUEST ['Like'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
 	
 	$social = new Social ();
-	$social -> like ();
+	$social->like ();
 } 
 
 else if (isset ( $_REQUEST ['Dislike'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
 	
 	$social = new Social ();
-	$social -> dislike ();
-} 
-else if (isset ($_REQUEST['AddC']) && isset ( $_POST ['comm'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
+	$social->dislike ();
+} else if (isset ( $_REQUEST ['AddC'] ) && isset ( $_POST ['comm'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
 	
 	$social = new Social ();
-	$social -> comment ();
-	
-}else if (isset ($_REQUEST['AddCP']) && isset ( $_POST ['file'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
-
-	$social = new Social ();
-	$social -> commentPhoto();
-
-}else if (isset ($_REQUEST['gl']) &&  (isset ($_REQUEST['sid']))){
+	$social->comment ();
+} else if (isset ( $_REQUEST ['AddCP'] ) && isset ( $_POST ['file'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
 	
 	$social = new Social ();
-	$social -> getLikes ();
-	
-}else if (isset ($_REQUEST['gdl']) &&  (isset ($_REQUEST['sid']))){
-	
-	$social = new Social ();
-	$social -> getDislikes ();
-
-}else if (isset ($_REQUEST['rmc']) && isset ( $_REQUEST ['cid'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
+	$social->commentPhoto ();
+} else if (isset ( $_REQUEST ['gl'] ) && (isset ( $_REQUEST ['sid'] ))) {
 	
 	$social = new Social ();
-	$social -> removeComment();
-		
-}else if (isset ($_REQUEST['bf']) && isset ( $_REQUEST ['uid'] ) && isset ( $_REQUEST ['oid'] )) {
-
-	$social = new Social ();
-	$social -> befriend();
+	$social->getLikes ();
+} else if (isset ( $_REQUEST ['gdl'] ) && (isset ( $_REQUEST ['sid'] ))) {
 	
-}else if (isset ($_REQUEST['uf']) && isset ( $_REQUEST ['uid'] ) && isset ( $_REQUEST ['oid'] )) {
-
 	$social = new Social ();
-	$social -> unfriend();
+	$social->getDislikes ();
+} else if (isset ( $_REQUEST ['rmc'] ) && isset ( $_REQUEST ['cid'] ) && isset ( $_REQUEST ['sid'] ) && isset ( $_REQUEST ['uid'] )) {
 	
-}else if (isset ($_REQUEST['gc']) && isset ( $_REQUEST ['sid'] )) {
 	$social = new Social ();
-	$social -> getComments();
-
-}else if (isset ($_REQUEST['rc']) && isset ( $_REQUEST ['cid'] ) && isset ( $_REQUEST ['uid'] )) {
-	$social = new Social ();
-	$social -> removeComment();
+	$social->removeComment ();
+} else if (isset ( $_REQUEST ['bf'] ) && isset ( $_REQUEST ['uid'] ) && isset ( $_REQUEST ['oid'] )) {
 	
-}else {
+	$social = new Social ();
+	$social->befriend ();
+} else if (isset ( $_REQUEST ['uf'] ) && isset ( $_REQUEST ['uid'] ) && isset ( $_REQUEST ['oid'] )) {
+	
+	$social = new Social ();
+	$social->unfriend ();
+} else if (isset ( $_REQUEST ['gc'] ) && isset ( $_REQUEST ['sid'] )) {
+	$social = new Social ();
+	$social->getComments ();
+} else if (isset ( $_REQUEST ['rc'] ) && isset ( $_REQUEST ['cid'] ) && isset ( $_REQUEST ['uid'] )) {
+	$social = new Social ();
+	$social->removeComment ();
+} else if (isset ( $_REQUEST ['gf'] ) && isset ( $_REQUEST ['uid'] )) {
+	
+	$social = new Social ();
+	$social->getFriends ();
+} else if (isset ( $_REQUEST ['gfc'] ) && isset ( $_REQUEST ['uid'] )) {
+	
+	$social = new Social ();
+	$social->getFriendCount ();
+} else {
 	die ( "Woops" );
 }
 ?>
