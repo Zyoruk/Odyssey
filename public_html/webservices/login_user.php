@@ -1,15 +1,66 @@
-<!DOCTYPE html>
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="pix/favicon.ico" type="image/x-icon" />
-    <title>Odissey Client</title>
-    
-        <style>
-      /* NOTE: The styles were added inline because Prefixfree needs access to your styles and they must be inlined if they are on local disk! */
-      @import url(http://fonts.googleapis.com/css?family=Exo:100,200,400);
-@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:700,400,300);
+<?php
+require_once 'connect_sql.php';
 
-body{
+
+if (isset($_POST['password']) and isset($_POST['username'])){
+	
+	$username = $_POST["username"];
+	$password = md5($_POST["password"]);
+
+	$sql = "SELECT ID, PASSWORD FROM authentication WHERE USERNAME = '$username'";
+	$result = mysql_query($sql, $conn);
+	
+	if (!result){
+		$conn->close();
+		die ("Error description" . mysql_error ($conn));
+	}
+
+	if (mysql_num_rows($result) == 0){
+		
+		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES ('$username ','$password');";
+		if (!mysql_query($sql, $conn)){
+			$conn->close();
+			die("Error description: " . mysql_error($conn));
+		}
+
+		$sql = "SELECT ID FROM authentication WHERE USERNAME = '$username'";
+		$result = mysql_query($sql, $conn);
+
+		if (!$result){
+			$conn->close();
+			die("Error description: " . mysql_error($conn));
+		}
+
+		$result = mysql_fetch_assoc($result);
+		$user_ID = $result["ID"];
+		echo $user_ID;
+		$conn->close();
+
+	}else {		
+		$sql = "SELECT ID, PASSWORD FROM authentication WHERE USERNAME = '$username'";
+		$result = mysql_query($sql, $conn);
+		
+		$result = mysql_fetch_assoc($result);
+		$user_ID = $result["ID"];
+		$pwd = $result["PASSWORD"];
+
+		if ($password != $pwd){
+			$conn->close();
+			die ("Wrong password");
+		}
+		 echo "
+		<html>
+		<head>
+    		   <meta charset='UTF-8'>
+    		   <link rel=\"icon\" href=\"pix/favicon.ico\" type=\"image/x-icon\" />
+    		   <title>Odissey Client</title>
+    
+      		   <style>
+		      /* NOTE: The styles were added inline because Prefixfree needs access to your styles and they must be inlined if they are on local disk! */
+		      @import url(http://fonts.googleapis.com/css?family=Exo:100,200,400);
+		@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:700,400,300);
+
+	body{
                 margin: 0;
                 padding: 0;
                 background: #fff;
@@ -27,7 +78,7 @@ body{
                 bottom: -40px;
                 width: auto;
                 height: auto;
-                background-image: url(pix/bg.jpg);
+                background-image: url(\"pix/bg.jpg\");
                 background-size: cover;
                 z-index: 0;
         }
@@ -171,18 +222,27 @@ body{
         ::-moz-input-placeholder{
            color: rgba(255,255,255,0.6);
         }
-    </style>
-        <script src="js/prefixfree.min.js"></script>
-  </head>  
-  <body>
-    <div class="body"></div>
-		<div class="grad"></div>
-		<div class="header">
-			<div> Welcome "#username" to Odissey<span>Client</span></div>
+        </style>
+      </head>
+		<body> <div class=\"body\"></div>
+		<div class=\"grad\"></div>
+		<div class=\"header\">
+			<div> Welcome '#username' to Odissey<span>Client</span></div>
 		</div>
 		<br>
-                <form class="login" action="synchronize.html" method="post"><br><br>
+                <form class=\"login\" action=\"synchronize.html\" method=\"get\"><br><br>
                     <br><br><br><br> <br><br>
-                    <input type="button" value="Synchronize">
-		</form>  
-  </body>
+                    <input type=\"submit\" value=\"Synchronize\" id=\"synchronize\">
+		</form>   
+                </body>
+		</html>
+		";
+		echo $user_ID;
+		$conn->close();
+	}
+	
+}else{
+	$conn->close();
+	die ("Woops");
+}
+?>
