@@ -18,7 +18,7 @@ class Admin {
 		$result = mysql_query($query, $conn);
 		
 		if (!$result){
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );
 		}else{
 			$result = mysql_fetch_assoc($result);
 			$result = json_encode($result);
@@ -41,7 +41,7 @@ class Admin {
 		$result = mysql_query($query, $conn);
 		
 		if (!$result){
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );
 		}else{
 			$result = mysql_fetch_assoc($result);
 			$result = json_encode($result);
@@ -57,7 +57,7 @@ if (isset ($_GET['gtl'])){
 	$admin = new Admin();
 	$admin->connectedUsers();
 }else{
-	die ( "{'error':Check params.}" );
+	die ( "{error:'Check params.'}" );
 }
 
 ?>
