@@ -348,57 +348,54 @@ class Song {
 	}
 }
 
-if (isset ( $_GET ['f'] )) {
+if ($_GET ['ups']) {
 	
-	$fun = $_GET ['f'];
-	$song = new Song ();
-	
-	if ($fun == 'ups') {
-		
-		if (isset ( $_GET ['uid'] )) {
-			
-			$song->upload ();
-		}
-	} else if ($fun == 'gs') {
-		if (isset ( $_GET ['filename'] ) && isset ( $_GET ["owner"] )) {
-			
-			$song->getsong ();
-		}
-	} else if ($fun == 'ds') {
-		
-		if (isset ( $_GET ['filename'] ) && isset ( $_GET ["owner"] )) {
-			$song->download ();
-		}
-	} else if ($fun == 'csmd') {
-		
-		if (isset ( $_GET ['sid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['artist'] ) || isset ( $_POST ['year'] ) || isset ( $_POST ['album'] ) ||isset ( $_POST ['genre'] ) ||isset ( $_POST ['lyrics'] ))) {
-			$song->changemetadata ();
-		}
-	} else if ($fun == 'rs') {
-		
-		if (isset ( $_GET ['sid'] ) && (isset ( $_GET ['uid'] ))) {
-			$song->removeSong ();
-		}
-	} else if ($fun == 'sus') {
-		
-		if (isset ( $_GET ['uid'] )) {
-			$song->showUserSongs ();
-		}
-	} else if ($fun == 'sch') {
-	
-		if (isset ( $_GET ['uid'] ) && isset ( $_POST ['val'] )) {
-			$song->showUserSongs ();
-		}
-	} else if ($fun == 'e') {
-	
-		if (isset ( $_GET ['uid'] ) && isset ( $_POST ['hash'] )) {
-			$song->showUserSongs ();
-		}
-	
-	} else {
-		
-		die ( "{'error':Check params.}" );
+	if (isset ( $_GET ['uid'] )) {
+		$song = new Song ();
+		$song->upload ();
 	}
+} else if ($_GET ['gs']) {
+	if (isset ( $_GET ['filename'] ) && isset ( $_GET ["owner"] )) {
+		$song = new Song ();
+		$song->getsong ();
+	}
+} else if ($_GET ['ds']) {
+	
+	if (isset ( $_GET ['filename'] ) && isset ( $_GET ["owner"] )) {
+		$song = new Song ();
+		$song->download ();
+	}
+} else if ($_GET ['csmd']) {
+	
+	if (isset ( $_GET ['sid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['artist'] ) || isset ( $_POST ['year'] ) || isset ( $_POST ['album'] ) ||isset ( $_POST ['genre'] ) ||isset ( $_POST ['lyrics'] ))) {
+		$song = new Song ();
+		$song->changemetadata ();
+	}
+} else if ($_GET ['rs']) {
+	
+	if (isset ( $_GET ['sid'] ) && (isset ( $_GET ['uid'] ))) {
+		$song = new Song ();
+		$song->removeSong ();
+	}
+} else if ($_GET ['sus']) {
+	
+	if (isset ( $_GET ['uid'] )) {
+		$song = new Song ();
+		$song->showUserSongs ();
+	}
+} else if ($_GET ['sch']) {
+
+	if (isset ( $_GET ['uid'] ) && isset ( $_POST ['val'] )) {
+		$song = new Song ();
+		$song->showUserSongs ();
+	}
+} else if ($_GET ['e']) {
+
+	if (isset ( $_GET ['uid'] ) && isset ( $_POST ['hash'] )) {
+		$song = new Song ();
+		$song->showUserSongs ();
+	}
+
 } else {
 	
 	die ( "{'error':Check params.}" );
