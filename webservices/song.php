@@ -36,14 +36,14 @@ class Song {
 		if ((($type == "audio/mp3") || ($type == "audio/MP3") || ($type == "audio/mpeg")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
 			
 			if ($_FILES ["file"] ["error"] > 0) {				
-				die ( "Error: File error." );
+				die ( "{error: 'File error.'" );
 			} else {
 				
 				// for sql (store song metadata)
 				
 				$mysql = "INSERT INTO songs ( NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$filename', '$size', '$user_ID',NOW());";
 				if (! mysql_query ( $mysql, $conn )) {
-					die ( "{'error':Error description: ".mysql_error($conn)."}" );
+					die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 				}
 				
 				// for mongo (store the song)
@@ -56,7 +56,7 @@ class Song {
 				$c = $grid->find(array("md5"=> $hash))->count();
 				
 				if ($c > 0){
-					die ("{'error':Song already exists}");
+					die ("{error:'Song already exists'}");
 				}
 				
 				$storedFile = $grid->storeFile ( $temp );
@@ -69,7 +69,7 @@ class Song {
 				$grid->save ( $song->file );
 			}
 		} else {			
-			die ( "{'error':Woops}" );
+			die ( "{error:'Woops'}" );
 		}	
 	}
 	
@@ -100,7 +100,7 @@ class Song {
 		header ( 'Cache-Control: must-revalidate' );
 		header ( 'Pragma: public' );
 		header ( 'Content-Length: ' . $song->file ['length'] );
-		echo $song->getBytes ();
+		echo "{bytes:". $song->getBytes ()."}";
 	}
 	
 	/**
@@ -194,7 +194,7 @@ class Song {
 		$sql = $sql . "\n WHERE ID = '$id';";
 		
 		if (! mysql_query ( $sql, $conn )) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 	}
 	
@@ -240,12 +240,12 @@ class Song {
 		$result = mysql_query ( $query );
 		
 		if (! $result) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		if (mysql_num_rows ( $result ) == 0) {
 			
-			die ( "{'error':Cannot remove song}" );
+			die ( "{error:'Cannot remove song'}" );
 		} else {
 			
 			$result = mysql_fetch_assoc ( $result );
@@ -259,7 +259,7 @@ class Song {
 			$query = "DELETE FROM SONGS WHERE ID = '$songID'";
 			
 			if (! mysql_query ( $query )) {
-				die ( "{'error':Error description: ".mysql_error($conn)."}" );
+				die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 			}			
 		}
 	}
@@ -281,8 +281,9 @@ class Song {
 		
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}else{
+			$result = mysql_fetch_assoc($result);
 			$result = json_encode($result);
 			echo $result;
 		}
@@ -314,8 +315,9 @@ class Song {
 		
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}else{
+			$result = mysql_fetch_assoc($result);
 			$result = json_encode($result);
 			echo $result;
 		}
@@ -398,7 +400,7 @@ if ($_GET ['ups']) {
 
 } else {
 	
-	die ( "{'error':Check params.}" );
+	die ( "{error:'Check params.'}" );
 }
 
 ?>

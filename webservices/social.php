@@ -26,7 +26,7 @@ class Social {
 		$sql = "INSERT INTO friend_relation (user_id, friends_id) VALUES ('$userID', '$friendID')";
 		
 		if (! mysql_query ( $sql, $conn )) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );
 		}
 	}
 	/**
@@ -46,7 +46,7 @@ class Social {
 		$sql = "DELETE FROM friend_relation WHERE user_id = '$userID' AND song_id = '$friendID'";
 		
 		if (! mysql_query ( $sql, $conn )) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );
 		}
 	}
 	/**
@@ -69,7 +69,7 @@ class Social {
 		$result = mysql_query ( $sql, $conn );
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		if (mysql_num_rows ( $result ) == 0) {
@@ -78,14 +78,14 @@ class Social {
 			
 			if (! mysql_query ( $sql, $conn )) {
 				
-				die ( "{'error':Error description: ".mysql_error($conn)."}" );
+				die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 			}
 		} else {
 			$sql = "DELETE FROM Likes WHERE user_id = '$userID'";
 			
 			if (! mysql_query ( $sql, $conn )) {
 				
-				die ( "{'error':Error description: ".mysql_error($conn)."}" );
+				die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 			}
 		}
 	}
@@ -111,7 +111,7 @@ class Social {
 		
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		if (mysql_num_rows ( $result ) == 0) {
@@ -120,14 +120,14 @@ class Social {
 			
 			if (! mysql_query ( $sql, $conn )) {
 				
-				die ( "{'error':Error description: ".mysql_error($conn)."}" );
+				die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 			}
 		} else {
 			$sql = "DELETE FROM Dislikes WHERE user_id = '$userID'";
 			
 			if (! mysql_query ( $sql, $conn )) {
 				
-				die ( "{'error':Error description: ".mysql_error($conn)."}" );
+				die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 			}
 		}
 	}
@@ -161,7 +161,7 @@ class Social {
 		$query = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
 		
 		if (! mysql_query ( $query, $conn )) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 	}
 	
@@ -197,7 +197,7 @@ class Social {
 		if ((($type == "image/png") || ($type == "image/jpg") || ($type == "image/bmp")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
 			
 			if ($_FILES ["file"] ["error"] > 0) {
-				die ( "{'error':'File error'}" );
+				die ( "{error:'File error'}" );
 			} else {
 				
 				// for mongo (store the photo)
@@ -219,7 +219,7 @@ class Social {
 				$query = "INSERT INTO comments ( user_id, song_id, comment_id) VALUES ('$userID', '$songID','$id' );";
 				
 				if (! mysql_query ( $query, $conn )) {
-					die ( "{'error':Error description: ".mysql_error($conn)."}" );
+					die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 				}
 			}
 		}
@@ -242,13 +242,13 @@ class Social {
 		$result = mysql_query ( $query );
 		
 		if (! result) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		$result = mysql_fetch_assoc ( $result );
 		
 		if (! ($result ["user_id"] == $userID)) {
-			die ( "{'error':Error: Cannot remove a comment}" );
+			die ( "{error:'Error: Cannot remove a comment'}" );
 		}
 		// for mongo (remove the commentary)
 		$db->comment->remove ( array (
@@ -258,7 +258,7 @@ class Social {
 		$query = "DELETE FROM comments WHERE comment_id = '$commentID';";
 		
 		if (! mysql_query ( $query, $conn )) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 	}
 	/**
@@ -280,7 +280,7 @@ class Social {
 		$result = mysql_query ( $query, $conn );
 		
 		if (! $result) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		$comments = [ ];
@@ -319,7 +319,7 @@ class Social {
 		$result = mysql_query ( $sql, $conn );
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		$count = mysql_fetch_assoc ( $result ) ['c'];
@@ -344,7 +344,7 @@ class Social {
 		$result = mysql_query ( $sql, $conn );
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		$count = mysql_fetch_assoc ( $result ) ['c'];
@@ -366,7 +366,7 @@ class Social {
 		$result = mysql_query ( $query );
 		
 		if (! $result) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		$eresult = json_encode ( $result );
@@ -389,7 +389,7 @@ class Social {
 		
 		if (! $result) {
 			
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 		
 		$count = mysql_fetch_assoc ( $result ) ['c'];
@@ -452,6 +452,6 @@ else if (isset ( $_GET ['Dislike'] ) && isset ( $_GET ['sid'] ) && isset ( $_GET
 	$social = new Social ();
 	$social->getFriendCount ();
 } else {
-	die ( "{'error':Check params.}" );
+	die ( "{error:'Check params.'}" );
 }
 ?>

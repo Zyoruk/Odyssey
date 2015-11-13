@@ -23,26 +23,26 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 	$result = mysql_query($sql, $conn);
 	
 	if (!result){
-		die ("Error description" . mysql_error ($conn));
+		die ( "{error:'Error description: ".mysql_error($conn)."'}" );
 	}
 
 	if (mysql_num_rows($result) == 0){
 		
 		$sql = "INSERT INTO authentication (USERNAME , PASSWORD) VALUES ('$username ','$password');";
 		if (!mysql_query($sql, $conn)){
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 
 		$sql = "SELECT ID FROM authentication WHERE USERNAME = '$username'";
 		$result = mysql_query($sql, $conn);
 
 		if (!$result){
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 
 		$result = mysql_fetch_assoc($result);
-		$user_ID = $result["ID"];
-		echo $user_ID;
+		$result = json_encode($result);
+		echo $result;
 		
 
 	}else {		
@@ -54,15 +54,19 @@ if (isset($_POST['password']) and isset($_POST['username'])){
 		$pwd = $result["PASSWORD"];
 
 		if ($password != $pwd){
-			die ("{'error':Wrong password}");
+			die ("{error:'Wrong password'}");
 		}
 		
-		echo $user_ID;
+		$result = mysql_query($sql, $conn);
+		
+		$result = mysql_fetch_assoc($result);
+		$result = json_encode($result);
+		echo $result;
 		
 	}
 	
 }else{
 	
-	die ("{'error':Woops}");
+	die ("{error:'Woops'}");
 }
 ?>

@@ -20,6 +20,7 @@ class Admin {
 		if (!$result){
 			die ( "{'error':Error description: ".mysql_error($conn)."}" );
 		}else{
+			$result = mysql_fetch_assoc($result);
 			$result = json_encode($result);
 			echo $result;
 		}
@@ -31,6 +32,7 @@ class Admin {
 	 * @return JSON
 	 */
 	function connectedUsers(){
+		require_once 'connect_sql.php';
 		$query =
 			"SELECT USERNAME
 			FROM authentication
@@ -41,6 +43,7 @@ class Admin {
 		if (!$result){
 			die ( "{'error':Error description: ".mysql_error($conn)."}" );
 		}else{
+			$result = mysql_fetch_assoc($result);
 			$result = json_encode($result);
 			echo $result;
 		}
@@ -50,7 +53,7 @@ class Admin {
 if (isset ($_GET['gtl'])){
 	$admin = new Admin();
 	$admin->getTop100();
-}else if (isset ($_GET['gth'])){
+}else if (isset ($_GET['cu'])){
 	$admin = new Admin();
 	$admin->connectedUsers();
 }else{

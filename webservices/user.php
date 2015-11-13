@@ -32,7 +32,7 @@ class User {
 		if ((($type == "image/png") || ($type == "image/jpg") || ($type == "image/bmp")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
 			
 			if ($_FILES ["file"] ["error"] > 0) {
-				die ( "{'error':Woops}" );
+				die ( "{error:'File error'}" );
 			} else {
 				
 				// for mongo (store the photo)
@@ -59,7 +59,7 @@ class User {
 				$grid->save ( $image->file );
 			}
 		} else {
-			die ( "{'error':Woops}" );
+			die ( "{error:'Woops'}" );
 		}
 	}
 	
@@ -88,7 +88,7 @@ class User {
 		header ( 'Pragma: public' );
 		header ( 'Content-Length: ' . $photo->file ['length'] );
 		
-		echo $photo->getBytes ();
+		echo "{bytes:".$photo->getBytes ()."}";
 	}
 	
 	/**
@@ -106,7 +106,7 @@ class User {
 				"type" => "image" 
 		) );
 		
-		echo $song->getBytes ();
+		echo "{bytes:".$song->getBytes ()."}";
 	}
 	
 	/**
@@ -167,7 +167,7 @@ class User {
 		$query = $query . "WHERE ID = '$userID'";
 		
 		if (! mysql_query ( $query )) {
-			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			die ( "{error:'Error description: ".mysql_error($conn)."'}" );e($result);
 		}
 	}
 }
@@ -185,6 +185,6 @@ if (isset ( $_GET ['up'] ) && isset ( $_FILES ["file"] ) && isset ( $_GET ["uid"
 } else if (isset ( $_GET ['cui'] ) && isset ( $_GET ['uid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['lastname'] ))) {
 	$user->changeUserInfo ();
 } else {
-	die ( "{'error':Check params.}" );
+	die ( "{error:'Check params.'}" );
 }
 ?>
