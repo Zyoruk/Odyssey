@@ -1,7 +1,21 @@
 <?php
-// Song class
-// Connects to mongo and mysql.
+/**
+ * @author Zyoruk
+ * Song class
+ * Connects to mongo and mysql.
+ */ 
+
 class Song {
+	/**
+	 * @param f = ups GET
+	 * @param song FILE.
+	 * @param uid GET
+	 * 
+	 * Connects to mongo and mysql. Uses Mongo GridFS to store the song and mysql to store song description.
+	 * only mp3 and mpeg are allowed.
+	 * 
+	 * @return Error or nothing
+	 */
 	function upload() {
 		require_once 'connect_sql.php';
 		require_once 'connect_mongo.php';
@@ -17,7 +31,7 @@ class Song {
 		$extension = end ( $temp );
 		$size = $_FILES ['file'] ['size'];
 		$type = $_FILES ["file"] ["type"];
-		$user_ID = $_REQUEST ["uid"];
+		$user_ID = $_GET ["uid"];
 		
 		if ((($type == "audio/mp3") || ($type == "audio/MP3") || ($type == "audio/mpeg")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
 			
@@ -26,7 +40,7 @@ class Song {
 				$connection->close ();
 				die ( "Error: File error." );
 			} else {
-
+				
 				// for sql (store song metadata)
 				
 				$mysql = "INSERT INTO songs ( NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$filename', '$size', '$user_ID',NOW());";
@@ -45,7 +59,6 @@ class Song {
 				$song->file ['owner'] = $user_ID;
 				$song->file ['type'] = "song";
 				$grid->save ( $song->file );
-
 			}
 		} else {
 			$conn->close ();
@@ -55,14 +68,23 @@ class Song {
 		
 		$conn->close ();
 		$connection->close ();
-		exit();
+		exit ();
 	}
 	
+	/**
+	 * @param f = ds
+	 * @param filename  GET
+	 * @param owner GET
+	 * 
+	 * Connects to mongo and gets the binary data from the song.
+	 * 
+	 * @return Error or nothing
+	 */
 	function download() {
-		require_once  'connect_mongo.php';
+		require_once 'connect_mongo.php';
 		// mongo
-		$song_name = $_REQUEST ['filename'];
-		$owner = $_REQUEST ["owner"];
+		$song_name = $_GET ['filename'];
+		$owner = $_GET ["owner"];
 		$grid = $db->getGridFS ();
 		$song = $grid->findOne ( array (
 				"filename" => $song_name,
@@ -81,15 +103,28 @@ class Song {
 		exit ();
 	}
 	
+	/**
+	 * @param f = csmd GET
+	 * @param sid GET
+	 * @param name POST
+	 * @param year POST
+	 * @param artist POST
+	 * @param lyrics POST
+	 * @param album POST
+	 * 
+	 * Connects to mysql and changes song info.
+	 * 
+	 * @return Error or nothing 
+	 */ 
 	function changemetadata() {
 		require_once 'connect_sql.php';
 		// Check for possible requests. ID must be specified.
-		$id = $_REQUEST ['sid'];
-		$name = $_REQUEST ['name'] or 'NULL';
-		$year = $_REQUEST ['year'] or 'NULL';
-		$artist = $_REQUEST ['artist'] or 'NULL';
-		$lyrics = $_REQUEST ['lyrics'] or 'NULL';
-		$album = $_REQUEST ['album'] or 'NULL';
+		$id = $_GET ['sid'];
+		$name = $_POST ['name'] or 'NULL';
+		$year = $_POST ['year'] or 'NULL';
+		$artist = $_POST ['artist'] or 'NULL';
+		$lyrics = $_POST ['lyrics'] or 'NULL';
+		$album = $_POST ['album'] or 'NULL';
 		
 		$multiple = FALSE;
 		
@@ -118,7 +153,9 @@ class Song {
 			$multiple = TRUE;
 		}
 		if ($lyrics != '') {
-			
+			/**
+			 * @todo Lyrics are text, which is meant to be stored in mongo.
+			 */
 			if ($multiple === TRUE)
 				$sql = $sql . ", ";
 			$sql = $sql . "LYRICS = '$lyrics'";
@@ -140,14 +177,23 @@ class Song {
 			die ( 'Error description: ' . mysql_error ( $conn ) );
 		}
 		$conn->close ();
-		exit();
+		exit ();
 	}
 	
+	/**
+	 * @param f = gs
+	 * @param filename GET
+	 * @param owner GET
+	 * 
+	 * Connects to mongo and returns song.
+	 * 
+	 * @return Bytes or Error
+	 */
 	function getsong() {
 		require_once 'connect_mongo.php';
 		// mongo
-		$song_name = $_REQUEST ['filename'];
-		$owner = $_REQUEST ["owner"];
+		$song_name = $_GET ['filename'];
+		$owner = $_GET ["owner"];
 		$grid = $db->getGridFS ();
 		$song = $grid->findOne ( array (
 				"filename" => $song_name,
@@ -155,35 +201,116 @@ class Song {
 		) );
 		echo $song->getBytes ();
 		$conn->close ();
-		exit();
+		exit ();
+	}
+	
+	/**
+	 * @param f = rs
+	 * @param uid GET
+	 * @param sid GET
+	 * 
+	 * Removes song
+	 * @return Error or nothing
+	 */
+	function removeSong() {
+		require 'connect_mongo.php';
+		require 'connect_sql.php';
+		
+		$userID = $_GET ['uid'];
+		$songID = $_GET ['sid'];
+		
+		$query = "SELECT NAME FROM songs WHERE OWNER = '$userID' AND ID = '$songID'";
+		
+		$result = mysql_query ( $query );
+		
+		if (! $result) {
+			die ( "Error description: " . mysql_error ( $conn ) );
+		}
+		
+		if (mysql_num_rows ( $result ) == 0) {
+			
+			die ( "Cannot remove song" );
+		} else {
+			
+			$result = mysql_fetch_assoc ( $result );
+			$name = $result ["NAME"];
+			$grid = $db->getGridFS ();
+			$grid->remove ( array (
+					'filename' => $name,
+					'owner' => $userID 
+			) );
+			
+			$query = "DELETE FROM SONGS WHERE ID = '$songID'";
+			
+			if (! mysql_query ( $query )) {
+				die ( "Error description: " . mysql_error ( $conn ) );
+			}
+			
+			$conn->close ();
+			$connection->close ();
+			exit ();
+		}
+	}
+	
+	/**
+	 * @param f = sus
+	 * @param uid GET
+	 * 
+	 * Shows a list of the songs
+	 * 
+	 * @return List or Error
+	 */
+	function showUserSongs() {
+		$user = $_GET ["uid"];
+		$sql = "SELECT NAME, ARTIST, ALBUM, YEAR, SIZE FROM songs WHERE OWNER = '$user';";
+		$result = mysql_query ( $conn, $sql );
+		
+		if (! $result) {
+			$conn->close ();
+			die ( "Error description: " . mysql_errno ( $conn ) );
+		}
+		
+		while ( $row = mysql_fetch_assoc ( $result ) ) {
+			echo "" . $row ["NAME"] . $row ["ARTIST"] . $row ["ALBUM"] . $row ["YEAR"] . $row ["SIZE"] . "<br>";
+		}
 	}
 }
 
-if (isset ( $_REQUEST ['f'] )) {
+if (isset ( $_GET ['f'] )) {
 	
-	$fun = $_REQUEST ['f'];
+	$fun = $_GET ['f'];
 	$song = new Song ();
-
+	
 	if ($fun == 'ups') {
 		
-		if (isset ( $_REQUEST ['uid'] )) {
+		if (isset ( $_GET ['uid'] )) {
 			
 			$song->upload ();
 		}
 	} else if ($fun == 'gs') {
-		if (isset ( $_REQUEST ['filename'] ) && isset ( $_REQUEST ["owner"] )) {
+		if (isset ( $_GET ['filename'] ) && isset ( $_GET ["owner"] )) {
 			
 			$song->getsong ();
 		}
-	} else if ($fun =='dds') {
+	} else if ($fun == 'ds') {
 		
-		if (isset ( $_REQUEST ['filename'] ) && isset ( $_REQUEST ["owner"] )) {
+		if (isset ( $_GET ['filename'] ) && isset ( $_GET ["owner"] )) {
 			$song->download ();
 		}
 	} else if ($fun == 'csmd') {
 		
-		if (isset ( $_REQUEST ['sid'] ) && (isset ( $_REQUEST ['name'] ) || isset ( $_REQUEST ['artist'] ) || isset ( $_REQUEST ['year'] ) || isset ( $_REQUEST ['album'] ) || isset ( $_REQUEST ['lyrics'] ))) {
+		if (isset ( $_GET ['sid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['artist'] ) || isset ( $_POST ['year'] ) || isset ( $_POST ['album'] ) || isset ( $_POST ['lyrics'] ))) {
 			$song->changemetadata ();
+		}
+	} else if ($fun == 'rs') {
+		
+		if (isset ( $_GET ['sid'] ) && (isset ( $_GET ['uid'] ))) {
+			$song->removeSong ();
+		}
+	} else if ($fun == 'sus') {
+		
+		if (isset ( $_GET ['uid'] )) {
+			$song->showUserSongs ();
 		}
 	} else {
 		
