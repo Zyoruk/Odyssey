@@ -35,9 +35,7 @@ class Song {
 		
 		if ((($type == "audio/mp3") || ($type == "audio/MP3") || ($type == "audio/mpeg")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
 			
-			if ($_FILES ["file"] ["error"] > 0) {
-				$conn->close ();
-				$connection->close ();
+			if ($_FILES ["file"] ["error"] > 0) {				
 				die ( "Error: File error." );
 			} else {
 				
@@ -45,12 +43,22 @@ class Song {
 				
 				$mysql = "INSERT INTO songs ( NAME, SIZE, OWNER,TIMESTAMP) VALUES ('$filename', '$size', '$user_ID',NOW());";
 				if (! mysql_query ( $mysql, $conn )) {
-					die ( "Error description: " . mysql_error ( $conn ) );
+					die ( "{'error':Error description: ".mysql_error($conn)."}" );
 				}
 				
 				// for mongo (store the song)
+				
+				// Compare hashes
 				$temp = $_FILES ['file'] ['tmp_name'];
+				$hash = md5($temp);
 				$grid = $db->getGridFS ();
+				
+				$c = $grid->find(array("md5"=> $hash))->count();
+				
+				if ($c > 0){
+					die ("{'error':Song already exists}");
+				}
+				
 				$storedFile = $grid->storeFile ( $temp );
 				$song = $grid->findOne ( array (
 						"_id" => $storedFile 
@@ -60,15 +68,9 @@ class Song {
 				$song->file ['type'] = "song";
 				$grid->save ( $song->file );
 			}
-		} else {
-			$conn->close ();
-			$connection->close ();
-			die ( 'Woops' );
-		}
-		
-		$conn->close ();
-		$connection->close ();
-		exit ();
+		} else {			
+			die ( "{'error':Woops}" );
+		}	
 	}
 	
 	/**
@@ -99,8 +101,6 @@ class Song {
 		header ( 'Pragma: public' );
 		header ( 'Content-Length: ' . $song->file ['length'] );
 		echo $song->getBytes ();
-		$conn->close ();
-		exit ();
 	}
 	
 	/**
@@ -123,6 +123,7 @@ class Song {
 		$name = $_POST ['name'] or 'NULL';
 		$year = $_POST ['year'] or 'NULL';
 		$artist = $_POST ['artist'] or 'NULL';
+		$genre = $_POST ['genre'] or 'NULL';
 		$lyrics = $_POST ['lyrics'] or 'NULL';
 		$album = $_POST ['album'] or 'NULL';
 		
@@ -152,13 +153,32 @@ class Song {
 			$sql = $sql . "ARTIST = '$artist'";
 			$multiple = TRUE;
 		}
-		if ($lyrics != '') {
-			/**
-			 * @todo Lyrics are text, which is meant to be stored in mongo.
-			 */
-			if ($multiple === TRUE)
+		if ($genre != '') {
+				
+			if ($multiple === TRUE){
 				$sql = $sql . ", ";
-			$sql = $sql . "LYRICS = '$lyrics'";
+			}
+			$sql = $sql . "GENRE = '$genre'";
+			$multiple = TRUE;
+		}
+		if ($lyrics != '') {
+			require_once 'connect_mongo.php';
+			
+			$text = $lyrics;
+			// for mongo (store the commentary)
+			$lyrics_collection = $db->lyric;
+			$lyrics = array (
+					'lyrics' => $lyrics 
+			);
+			$lyrics_collection->insert ( $lyrics );
+			
+			$id = ( string ) $lyrics ["_id"];
+			
+			if ($multiple === TRUE){
+				$sql = $sql . ", ";
+			}
+			
+			$sql = $sql . "LYRICS = '$id'";
 			$multiple = TRUE;
 		}
 		
@@ -174,10 +194,8 @@ class Song {
 		$sql = $sql . "\n WHERE ID = '$id';";
 		
 		if (! mysql_query ( $sql, $conn )) {
-			die ( 'Error description: ' . mysql_error ( $conn ) );
+			die ( "{'error':Error description: ".mysql_error($conn)."}" );
 		}
-		$conn->close ();
-		exit ();
 	}
 	
 	/**
@@ -200,8 +218,6 @@ class Song {
 				"owner" => $owner 
 		) );
 		echo $song->getBytes ();
-		$conn->close ();
-		exit ();
 	}
 	
 	/**
@@ -224,12 +240,12 @@ class Song {
 		$result = mysql_query ( $query );
 		
 		if (! $result) {
-			die ( "Error description: " . mysql_error ( $conn ) );
+			die ( "{'error':Error description: ".mysql_error($conn)."}" );
 		}
 		
 		if (mysql_num_rows ( $result ) == 0) {
 			
-			die ( "Cannot remove song" );
+			die ( "{'error':Cannot remove song}" );
 		} else {
 			
 			$result = mysql_fetch_assoc ( $result );
@@ -243,12 +259,8 @@ class Song {
 			$query = "DELETE FROM SONGS WHERE ID = '$songID'";
 			
 			if (! mysql_query ( $query )) {
-				die ( "Error description: " . mysql_error ( $conn ) );
-			}
-			
-			$conn->close ();
-			$connection->close ();
-			exit ();
+				die ( "{'error':Error description: ".mysql_error($conn)."}" );
+			}			
 		}
 	}
 	
@@ -261,18 +273,78 @@ class Song {
 	 * @return List or Error
 	 */
 	function showUserSongs() {
+		require_once "connect_sql.php";
+		
 		$user = $_GET ["uid"];
-		$sql = "SELECT NAME, ARTIST, ALBUM, YEAR, SIZE FROM songs WHERE OWNER = '$user';";
+		$sql = "SELECT ID,NAME, ARTIST, ALBUM, YEAR, SIZE FROM songs WHERE OWNER = '$user';";
 		$result = mysql_query ( $conn, $sql );
 		
 		if (! $result) {
-			$conn->close ();
-			die ( "Error description: " . mysql_errno ( $conn ) );
+			
+			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+		}else{
+			$result = json_encode($result);
+			echo $result;
 		}
 		
-		while ( $row = mysql_fetch_assoc ( $result ) ) {
-			echo "" . $row ["NAME"] . $row ["ARTIST"] . $row ["ALBUM"] . $row ["YEAR"] . $row ["SIZE"] . "<br>";
+	}
+	
+	/**
+	 * @param f = sch
+	 * @param uid GET
+	 * @param val POST
+	 * 
+	 * @return Error or list 
+	 */
+	function search (){
+		require_once "connect_sql.php";
+		
+		$userID = $_GET['uid'];
+		$val = $_POST['val'];
+		
+		$query = "SELECT NAME, ARTIST, ALBUM, YEAR, SIZE".
+				" FROM songs".
+				" WHERE OWNER = '$userID'".
+				" AND NAME LIKE " . '"%"'. "'$val'" . '"%"' . 
+				" OR ARTIST LIKE " . '"%"'. "'$val'" . '"%"' .
+				" OR YEAR LIKE " . '"%"'. "'$val'" . '"%"' .
+				" OR ALBUM LIKE " . '"%"'. "'$val'" . '"%"';
+		
+		$result = mysql_query($query , $conn);
+		
+		if (! $result) {
+			
+			die ( "{'error':Error description: ".mysql_error($conn)."}" );
+		}else{
+			$result = json_encode($result);
+			echo $result;
 		}
+		
+		
+	}
+	
+	/**
+	 * @param f = e GET
+	 * @param hash GET
+	 * 
+	 * Checks if exists
+	 * 
+	 * @return Bool or Error
+	 */
+	
+	function exists (){
+		require_once 'connect_mongo.php';
+		
+		$hash = $_GET['hash'];
+		$userID = $_GET['uid'];
+		
+		$c = $grid->find(array("md5"=> $hash))->count();
+		
+		if ($c > 0){
+			echo "{exists:1}";
+		}else{
+			echo "{exists:0}";
+		}		
 	}
 }
 
@@ -299,7 +371,7 @@ if (isset ( $_GET ['f'] )) {
 		}
 	} else if ($fun == 'csmd') {
 		
-		if (isset ( $_GET ['sid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['artist'] ) || isset ( $_POST ['year'] ) || isset ( $_POST ['album'] ) || isset ( $_POST ['lyrics'] ))) {
+		if (isset ( $_GET ['sid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['artist'] ) || isset ( $_POST ['year'] ) || isset ( $_POST ['album'] ) ||isset ( $_POST ['genre'] ) ||isset ( $_POST ['lyrics'] ))) {
 			$song->changemetadata ();
 		}
 	} else if ($fun == 'rs') {
@@ -312,13 +384,24 @@ if (isset ( $_GET ['f'] )) {
 		if (isset ( $_GET ['uid'] )) {
 			$song->showUserSongs ();
 		}
+	} else if ($fun == 'sch') {
+	
+		if (isset ( $_GET ['uid'] ) && isset ( $_POST ['val'] )) {
+			$song->showUserSongs ();
+		}
+	} else if ($fun == 'e') {
+	
+		if (isset ( $_GET ['uid'] ) && isset ( $_POST ['hash'] )) {
+			$song->showUserSongs ();
+		}
+	
 	} else {
 		
-		die ( "Check params." );
+		die ( "{'error':Check params.}" );
 	}
 } else {
 	
-	die ( 'Check params.' );
+	die ( "{'error':Check params.}" );
 }
 
 ?>

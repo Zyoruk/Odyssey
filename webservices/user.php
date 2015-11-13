@@ -32,8 +32,7 @@ class User {
 		if ((($type == "image/png") || ($type == "image/jpg") || ($type == "image/bmp")) && in_array ( $extension, $allowed_ext ) && $size > 0) {
 			
 			if ($_FILES ["file"] ["error"] > 0) {
-				$connection->close ();
-				die ( 'Error' );
+				die ( "{'error':Woops}" );
 			} else {
 				
 				// for mongo (store the photo)
@@ -58,11 +57,9 @@ class User {
 				$image->file ['owner'] = $user;
 				$image->file ['type'] = "image";
 				$grid->save ( $image->file );
-				$connection->close ();
 			}
 		} else {
-			$connection->close ();
-			die ( "Error" );
+			die ( "{'error':Woops}" );
 		}
 	}
 	
@@ -92,9 +89,6 @@ class User {
 		header ( 'Content-Length: ' . $photo->file ['length'] );
 		
 		echo $photo->getBytes ();
-		
-		$connection->close ();
-		exit ();
 	}
 	
 	/**
@@ -113,8 +107,6 @@ class User {
 		) );
 		
 		echo $song->getBytes ();
-		
-		$connection->close ();
 	}
 	
 	/**
@@ -132,9 +124,8 @@ class User {
 				"owner" => $owner,
 				"type" => "image" 
 		) );
-		
-		$connection->close ();
 	}
+	
 	/**
 	 * @param cui GET
 	 * @param uid GET
@@ -176,24 +167,24 @@ class User {
 		$query = $query . "WHERE ID = '$userID'";
 		
 		if (! mysql_query ( $query )) {
-			die ( "Error description: " . mysql_error ( $conn ) );
+			die ( "{'error':Error description: ".mysql_error($conn)."}" );
 		}
 	}
 }
 
 $user = new User ();
 
-if (isset ( $_REQUEST ['up'] ) && isset ( $_FILES ["file"] ) && isset ( $_REQUEST ["uid"] )) {
+if (isset ( $_GET ['up'] ) && isset ( $_FILES ["file"] ) && isset ( $_GET ["uid"] )) {
 	$user->uploadPhoto ();
-} else if (isset ( $_REQUEST ['dp'] ) && isset ( $_REQUEST ['uid'] )) {
+} else if (isset ( $_GET ['dp'] ) && isset ( $_GET ['uid'] )) {
 	$user->downloadPhoto ();
-} else if (isset ( $_REQUEST ['gp'] ) && isset ( $_REQUEST ['uid'] )) {
+} else if (isset ( $_GET ['gp'] ) && isset ( $_GET ['uid'] )) {
 	$user->getPhoto ();
-} else if (isset ( $_REQUEST ['rp'] ) && isset ( $_REQUEST ['uid'] )) {
+} else if (isset ( $_GET ['rp'] ) && isset ( $_GET ['uid'] )) {
 	$user->removePhoto ();
-} else if (isset ( $_REQUEST ['cui'] ) && isset ( $_REQUEST ['uid'] ) && (isset ( $_REQUEST ['name'] ) || isset ( $_REQUEST ['lastname'] ))) {
+} else if (isset ( $_GET ['cui'] ) && isset ( $_GET ['uid'] ) && (isset ( $_POST ['name'] ) || isset ( $_POST ['lastname'] ))) {
 	$user->changeUserInfo ();
 } else {
-	die ( "Woops" );
+	die ( "{'error':Check params.}" );
 }
 ?>
